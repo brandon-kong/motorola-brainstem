@@ -45,9 +45,19 @@ def generate_voxel_cluster_ids(file_path: str, cluster_num_list_arg: str):
 
         print("Occurence dict for cluster number {}: {}".format(cluster_num_list[i], occurence_dict))
 
-    # Load the gene and XYZ data from the mutated dataset
+    # Load the XYZ data from the mutated dataset
+    
+    xyz_dfs = pd.read_csv('data_files/output_K1_mutate.csv', header=0, float_precision='high')
+
+    # Only add the X, Y, and Z columns to the df_data
+
+    df_data['X'] = xyz_dfs['X']
+    df_data['Y'] = xyz_dfs['Y']
+    df_data['Z'] = xyz_dfs['Z']
+    
+    # Load the gene data from the original dataset
         
-    gene_dfs = pd.read_csv('data_files/output_K1_mutate.csv', header=0, float_precision='high')
+    gene_dfs = pd.read_csv('data_files/output_K1.csv', header=0, float_precision='high')
 
     # Iterate through each column and column data and add the gene data to the df_data
 
