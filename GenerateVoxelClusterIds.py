@@ -29,9 +29,18 @@ def generate_voxel_cluster_ids(file_path: str, cluster_num_list_arg: str):
         print("Clustering results for cluster number {}: {}".format(cluster_num_list[i], clustering_results))
 
         df_data['{}_clusters'.format(cluster_num_list[i])] = clustering_results
-        print("Clustering results for cluster number {}")
 
-        # update the dataframe
+        nums_of_each_cluster = {}
+
+        for j in range(len(clustering_results)):
+            a = nums_of_each_cluster.get(clustering_results[j])
+
+            if (a is None):
+                nums_of_each_cluster[clustering_results[j]] = 1
+            else:
+                nums_of_each_cluster[clustering_results[j]] = nums_of_each_cluster[clustering_results[j]] + 1
+
+        print(nums_of_each_cluster)
 
     # load the genes
     gene_dfs = pd.read_csv('data_files/output_K1.csv', header=0, float_precision='high')
