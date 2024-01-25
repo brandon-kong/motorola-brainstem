@@ -1,11 +1,7 @@
 # Brandon Kong's String Parsing
 # Motorola_Brainstem 2024
 
-from typing import List, Generic, TypeVar
-import string
-
-
-T = TypeVar('T')
+from typing import List
 
 
 def string_to_int_list(string_as_list: str) -> List[int]:

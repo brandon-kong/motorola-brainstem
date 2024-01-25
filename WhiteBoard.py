@@ -22,6 +22,14 @@ matplotlib.use('TkAgg')
 
 
 def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
+    """
+    Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
+    (This is a snippet of Colin's Code that I just put into a separate function, so this is Colin's code)
+    
+    :param file_path: The path to the file
+    :param n_clusters: The number of clusters to generate
+    :return: Cluster labels
+    """
     df = pd.read_csv(file_path, header=0, float_precision='high')
     kmeans: KMeans = KMeans(n_clusters=n_clusters, random_state=25)
     cluster_labels: List[int] = kmeans.fit_predict(df)
