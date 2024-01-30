@@ -54,7 +54,7 @@ def generate_voxel_cluster_ids(file_path: str, cluster_num_list_arg: str):
     df_data['X'] = xyz_dfs['X']
     df_data['Y'] = xyz_dfs['Y']
     df_data['Z'] = xyz_dfs['Z']
-    
+
     # Load the gene data from the original dataset
         
     gene_dfs = pd.read_csv('data_files/output_K1.csv', header=0, float_precision='high')
@@ -67,6 +67,8 @@ def generate_voxel_cluster_ids(file_path: str, cluster_num_list_arg: str):
     df = pd.DataFrame(df_data)
 
     df.to_csv('data_files/generated/voxels_cluster_ids.csv', index=False)
+
+    print('Wrote to data_files/generated/voxels_cluster_ids.csv')
 
 
 if __name__ == '__main__':
