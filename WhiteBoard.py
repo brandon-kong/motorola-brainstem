@@ -15,6 +15,9 @@ from mpl_toolkits.mplot3d import Axes3D  # Import for 3-D plotting
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
+# Local packages
+from lib.string_parse import string_to_int_list
+
 # Choosing a matplotlib backend to ensure plot pop-up will deploy
 import matplotlib
 
@@ -37,115 +40,24 @@ def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
     return cluster_labels
 
 
-def brain_kmeansREDUX():
-    """
-    Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
-
-    :return: Cluster labels
-    """
-
-    # User greeting
-    print("\nHey Colin! This is brain_kmeansREDUX(). Booting up protocol now...")
-
-    # Asking for filepath to be analyzed
-    filepath = input("\nEnter file to be k-mean'ed: ")
-
-    # Loading CSV file with pandas package
-    df = pd.read_csv(filepath, header=0, float_precision='high')
-
-    # Printing head table to ensure proper loading of data
-    print(f"\nHEAD TABLE OF LOADED DATA FRAME: {filepath}")
-    print(df.head())
-
-    # Asking for a max number of clusters
-    max_clusters = int(input("\nEnter the maximum number of k-means clusters: "))
-
-    # Calculating the SSEs within clusters (the inertias)
-    inertias = []
-    for k in range(1, max_clusters + 1):
-        kmeans = KMeans(n_clusters=k, random_state=35)
-        kmeans.fit(df)
-        inertias.append(kmeans.inertia_)
-
-    # Plotting knee plot
-    plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-    plt.plot(range(1, max_clusters + 1), inertias, marker='o')
-    plt.title('\nKnee Plot for K-Means')
-    plt.xlabel('Number of k-clusters')
-    plt.ylabel('Intertia (SSE within clusters)')
-    plt.grid(True)
-
-    # Calculating silhouette scores for given number of clusters
-    silhouette_scores = []
-    for k in range(2, max_clusters + 2):
-        kmeans = KMeans(n_clusters=k, random_state=35)
-        labels = kmeans.fit_predict(df)
-        silhouette_avg = silhouette_score(df, labels)
-        silhouette_scores.append(silhouette_avg)
-
-    # Plotting silhouette plot
-    plt.subplot(1, 2, 2)
-    plt.plot(range(1, max_clusters + 1), silhouette_scores, marker='o')
-    plt.title("\nSilhouette Plot for K-Means")
-    plt.xlabel('Number of Clusters')
-    plt.ylabel('Silhouette Score')
-    plt.grid(True)
-
-    plt.tight_layout()
-    plt.show()
-
-    # Asking user for the number of clusters they would like to set for clustering protocol
-    cluster_set = int(input("\nBased on the previous results, how many clusters would you like to set?: "))
-
-    # Performing k-means
-    kmeans = KMeans(n_clusters=cluster_set, random_state=25)
-    cluster_labels = kmeans.fit_predict(df)
-
-
-    # Generate a data frame of the original dataset with X,Y,Z along with the cluster id
-
-    df['cluster_id'] = cluster_labels
-
-    # Load the XYZ data from the mutated dataset
-
-    xyz_dfs = pd.read_csv('data_files/output_K1_mutate.csv', header=0, float_precision='high')
-
-    # Only add the X, Y, and Z columns to the df_data
-
-    df['X'] = xyz_dfs['X']
-    df['Y'] = xyz_dfs['Y']
-    df['Z'] = xyz_dfs['Z']
-
-    # Load the gene data from the original dataset
-
-    gene_dfs = pd.read_csv('data_files/output_K1.csv', header=0, float_precision='high')
-
-    # Add all the gene data to the df_data
-
-    for (columnName, columnData) in gene_dfs.items():
-        df[columnName] = columnData
-
-    df = pd.DataFrame(df)
-
-    print(df.head())
-
-
-    # Returning the cluster labels
-    return cluster_labels
-
-
 ###################################################################################################################
 
 
-def brain_kmeans_cBk ():
-    print("\nHey Colin! This is brain_kmeansREDUX(). Booting up protocol now...")
+def brain_kmeans_cbk():
+    """
+    Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
+    :return: Cluster labels
+    """
+
+    name = input("What is your name? ")
+    print(f"\nHey {name}! This is brain_kmeans_cbk(). Doing some cool stuff now...")
 
     # Asking for filepath to be analyzed
     filepath = input("\nEnter file to be k-mean'ed: ")
 
     # Loading CSV file with pandas package
     df = pd.read_csv(filepath, header=0, float_precision='high')
+    new_df = {}
 
     # Printing head table to ensure proper loading of data
     print(f"\nHEAD TABLE OF LOADED DATA FRAME: {filepath}")
@@ -154,7 +66,8 @@ def brain_kmeans_cBk ():
     # Asking for a max number of clusters
     max_clusters = int(input("\nEnter the maximum number of k-means clusters: "))
 
-    # Calculating the SSEs within clusters (the inertias)
+    # Calculating the SSEs within clusters (the inertia's)
+
     inertias = []
     for k in range(1, max_clusters + 1):
         kmeans = KMeans(n_clusters=k, random_state=35)
@@ -167,7 +80,7 @@ def brain_kmeans_cBk ():
     plt.plot(range(1, max_clusters + 1), inertias, marker='o')
     plt.title('\nKnee Plot for K-Means')
     plt.xlabel('Number of k-clusters')
-    plt.ylabel('Intertia (SSE within clusters)')
+    plt.ylabel('Inertia (SSE within clusters)')
     plt.grid(True)
 
     # Calculating silhouette scores for given number of clusters
@@ -190,13 +103,48 @@ def brain_kmeans_cBk ():
     plt.show()
 
     # Asking user for the number of clusters they would like to set for clustering protocol
-    cluster_set = int(input("\nBased on the previous results, how many clusters would you like to set?: "))
+    cluster_set = string_to_int_list(
+        input("\nBased on the previous results, how many clusters would you like to set?: "))
 
     # Performing k-means
-    kmeans = KMeans(n_clusters=cluster_set, random_state=25)
-    cluster_labels = kmeans.fit_predict(df)
 
+    cluster_results = []
 
+    for i in range(len(cluster_set)):
+        kmeans = KMeans(n_clusters=cluster_set[i], random_state=25)
+        cluster_labels = kmeans.fit_predict(df)
+
+        new_df[f'cluster_{cluster_set[i]}'] = cluster_labels
+
+        # Appending the cluster results to the cluster_results list
+        cluster_results.append(cluster_labels)
+
+        # Visualizations would go here
+
+    # Load the XYZ data from the mutated dataset
+    xyz_dfs = pd.read_csv('data_files/output_K1_mutate.csv', header=0, float_precision='high')
+
+    # Add all the gene data to the df_data
+
+    for (columnName, columnData) in xyz_dfs.items():
+        new_df[columnName] = columnData
+
+    df = pd.DataFrame(new_df)
+
+    print(df.head())
+
+    wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
+
+    if wants_to_save.lower() in ['y', 'yes', 'yeah', 'yep', 'yup']:
+        name_of_file = input("What would you like to name the file?: ")
+        name_of_file = name_of_file.replace(".csv", "")
+
+        df.to_csv(f"{name_of_file}.csv", index=False)
+
+        print(f"File saved as {name_of_file}.csv")
+
+    # Returning the list of cluster results
+    return cluster_results
 
 
 def brain_kmeansREDUX2():
@@ -281,8 +229,8 @@ def brain_kmeansREDUX2():
     plt.show()
 
     # Returning the cluster labels
-    return(cluster_labels)
+    return cluster_labels
 
 
 if __name__ == '__main__':
-    brain_kmeansREDUX()
+    brain_kmeans_cbk()
