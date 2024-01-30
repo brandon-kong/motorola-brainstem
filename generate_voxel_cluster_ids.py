@@ -1,26 +1,34 @@
 # Brandon Kong's GenerateVoxelClusterIds
 # Motorola_Brainstem 2024
 
-import numpy as np
-import pandas
+from pprint import pprint
 import pandas as pd
 
 from lib.occurences import get_occurence_dict
 from lib.string_parse import string_to_int_list
 
 from WhiteBoard import generate_clustering_results
-from typing import List
 import typer
 
 
 num_voxels = 1465
 
 
-def generate_voxel_cluster_ids(file_path: str, cluster_num_list_arg: str):
+def generate_voxel_cluster_ids_data(
+        input_data_file_path: str, 
+        cluster_num_list_arg: str, 
+        output_data_file_name: str
+    ):
     """
-    Generates a CSV file with the voxel number, cluster ids, XYZ Coordinates, and gene ids
+    Generates a CSV file with the voxel number, cluster ids, 
+    XYZ Coordinates, and gene densities
+    
     :param file_path: The path to the file
-    :param cluster_num_list_arg: A string of format "1,2,3" that represents the cluster numbers
+    :param cluster_num_list_arg: A string of format "1,2,3" that 
+    represents the cluster numbers
+
+    :param output_data_file_path: The name of the output file
+
     :return: None
     """
 
@@ -36,14 +44,17 @@ def generate_voxel_cluster_ids(file_path: str, cluster_num_list_arg: str):
     for i in range(len(cluster_num_list)):
 
         # Do the clustering from Colin's WhiteBoard.py, and get the results
-        clustering_results = generate_clustering_results(file_path, cluster_num_list[i])
+        clustering_results = generate_clustering_results(input_data_file_path, cluster_num_list[i])
 
         df_data['{}_clusters'.format(cluster_num_list[i])] = clustering_results
 
         # Compute the occurences of each cluster group
         occurence_dict = get_occurence_dict(clustering_results)
 
-        print("Occurence dict for cluster number {}: {}".format(cluster_num_list[i], occurence_dict))
+        print(f"Occurence dict for cluster number {cluster_num_list[i]}: ")
+        
+        for key, value in occurence_dict.items():
+            print(f"{key}: {value}")
 
     # Load the XYZ data from the mutated dataset
     
@@ -66,10 +77,9 @@ def generate_voxel_cluster_ids(file_path: str, cluster_num_list_arg: str):
 
     df = pd.DataFrame(df_data)
 
-    df.to_csv('data_files/generated/voxels_cluster_ids.csv', index=False)
+    df.to_csv(f'data_files/generated/{output_data_file_name}.csv', index=False)
 
-    print('Wrote to data_files/generated/voxels_cluster_ids.csv')
-
+    print(f'Wrote dataframe to data_files/generated/{output_data_file_name}.csv')
 
 if __name__ == '__main__':
-    typer.run(generate_voxel_cluster_ids)
+    typer.run(generate_voxel_cluster_ids_data)
