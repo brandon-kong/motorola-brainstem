@@ -43,7 +43,7 @@ def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
 ###################################################################################################################
 
 
-def brain_kmeans_cbk():
+def brain_kmeans_cbk() -> List[List[int]]:
     """
     Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
     :return: Cluster labels
@@ -74,14 +74,8 @@ def brain_kmeans_cbk():
         kmeans.fit(df)
         inertias.append(kmeans.inertia_)
 
-    # Plotting knee plot
-    plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-    plt.plot(range(1, max_clusters + 1), inertias, marker='o')
-    plt.title('\nKnee Plot for K-Means')
-    plt.xlabel('Number of k-clusters')
-    plt.ylabel('Inertia (SSE within clusters)')
-    plt.grid(True)
+    # Plotting the knee plot
+    plot_knee_plot(max_clusters, inertias)
 
     # Calculating silhouette scores for given number of clusters
     silhouette_scores = []
@@ -92,12 +86,9 @@ def brain_kmeans_cbk():
         silhouette_scores.append(silhouette_avg)
 
     # Plotting silhouette plot
-    plt.subplot(1, 2, 2)
-    plt.plot(range(1, max_clusters + 1), silhouette_scores, marker='o')
-    plt.title("\nSilhouette Plot for K-Means")
-    plt.xlabel('Number of Clusters')
-    plt.ylabel('Silhouette Score')
-    plt.grid(True)
+    plot_silhouette_plot(max_clusters, silhouette_scores)
+
+    # Displaying the plots
 
     plt.tight_layout()
     plt.show()
@@ -108,11 +99,10 @@ def brain_kmeans_cbk():
 
     # Performing k-means
 
-    cluster_results = []
+    cluster_results: List[List[int]] = []
 
     for i in range(len(cluster_set)):
-        kmeans = KMeans(n_clusters=cluster_set[i], random_state=25)
-        cluster_labels = kmeans.fit_predict(df)
+        cluster_labels = do_kmeans_clustering(df, cluster_set[i])
 
         new_df[f'cluster_{cluster_set[i]}'] = cluster_labels
 
@@ -143,8 +133,59 @@ def brain_kmeans_cbk():
 
         print(f"File saved as {name_of_file}.csv")
 
+    print(f"Have a nice day, {name}!")
+
     # Returning the list of cluster results
     return cluster_results
+
+
+def plot_knee_plot(max_clusters: int, inertias: List[float]):
+    """
+    Plots the knee plot for the k-means clustering
+
+    :param max_clusters:
+    :param inertias:
+    :return:
+    """
+
+    plt.figure(figsize=(12, 6))
+    plt.subplot(1, 2, 1)
+    plt.plot(range(1, max_clusters + 1), inertias, marker='o')
+    plt.title('\nKnee Plot for K-Means')
+    plt.xlabel('Number of k-clusters')
+    plt.ylabel('Inertia (SSE within clusters)')
+    plt.grid(True)
+
+
+def plot_silhouette_plot(max_clusters: int, scores: List[float]):
+    """
+    Plots the silhouette plot for the k-means clustering
+
+    :param max_clusters:
+    :param scores:
+    :return:
+    """
+
+    plt.subplot(1, 2, 2)
+    plt.plot(range(1, max_clusters + 1), scores, marker='o')
+    plt.title("\nSilhouette Plot for K-Means")
+    plt.xlabel('Number of Clusters')
+    plt.ylabel('Silhouette Score')
+    plt.grid(True)
+
+
+def do_kmeans_clustering(data: pd.DataFrame, n_clusters: int) -> List[int]:
+    """
+    Performs K-Means clustering on a given data frame
+
+    :param data: The data frame to perform K-Means clustering on
+    :param n_clusters: The number of clusters to generate
+    :return: Cluster labels
+    """
+    kmeans: KMeans = KMeans(n_clusters=n_clusters, random_state=25)
+    cluster_labels: List[int] = kmeans.fit_predict(data)
+
+    return cluster_labels
 
 
 if __name__ == '__main__':
