@@ -17,6 +17,8 @@ import matplotlib
 matplotlib.use('TkAgg')
 
 
+cluster_label_prefix = 'cluster_'
+
 def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
     """
     Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
@@ -97,12 +99,13 @@ def brain_kmeans_cbk() -> List[List[int]]:
     for i in range(len(cluster_set)):
         cluster_labels = do_kmeans_clustering(df, cluster_set[i])
 
-        new_df[f'cluster_{cluster_set[i]}'] = cluster_labels
+        new_df[f'{cluster_label_prefix}{cluster_set[i]}'] = cluster_labels
 
         # Appending the cluster results to the cluster_results list
         cluster_results.append(cluster_labels)
 
         # Visualizations would go here
+        visualize_clusters(filepath)
 
     # Load the XYZ data from the mutated dataset
     xyz_dfs = pd.read_csv('data_files/output_K1_mutate.csv', header=0, float_precision='high')
@@ -110,7 +113,8 @@ def brain_kmeans_cbk() -> List[List[int]]:
     # Add all the gene data to the df_data
 
     for (columnName, columnData) in xyz_dfs.items():
-        new_df[columnName] = columnData
+        if (columnName in df) or columnName in ['X', 'Y', 'Z']:
+            new_df[columnName] = columnData
 
     df = pd.DataFrame(new_df)
 
@@ -180,5 +184,52 @@ def do_kmeans_clustering(data: pd.DataFrame, n_clusters: int) -> List[int]:
     return cluster_labels
 
 
+
+def visualize_clusters(df_to_visualize: str):
+
+    df = pd.read_csv(df_to_visualize, header=0, float_precision='high')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    x = df['X']
+    y = df['Y']
+    z = df['Z']
+    
+    # Scatter plot with colored points based on cluster_id
+
+    cluster_labels = get_cluster_labels_from_df(df)
+
+    for i in range(len(cluster_labels)):
+
+        scatter = ax.scatter(x, y, z, c=cluster_labels[i], cmap='viridis')
+        
+        ax.set_xlabel('X Label')
+        ax.set_ylabel('Y Label')
+        ax.set_zlabel('Z Label')
+
+        # Add a colorbar
+        colorbar = fig.colorbar(scatter, ax=ax, label='Cluster ID')
+
+    # Show the plot
+        plt.show(block=True)
+
+    # Customize the plot
+    
+    
+
+def get_cluster_labels_from_df(df: pd.DataFrame) -> List[List[int]]:
+
+    labels = []
+
+    for (columnName, columnData) in df.items():
+        strColName = str(columnName)
+
+        if strColName.startswith(cluster_label_prefix):
+            labels.append(df[strColName])
+
+    return labels
+
+
 if __name__ == '__main__':
-    brain_kmeans_cbk()
+    visualize_clusters('data_files/generated/gas6_clustered_xyz.csv')
