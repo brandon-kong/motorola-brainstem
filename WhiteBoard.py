@@ -3,17 +3,10 @@
 
 # Loading global packages
 from typing import List
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy.cluster.hierarchy import linkage, dendrogram
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
-from mpl_toolkits.mplot3d import Axes3D  # Import for 3-D plotting
 from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
 
 # Local packages
 from lib.string_parse import string_to_int_list
