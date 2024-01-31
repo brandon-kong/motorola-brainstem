@@ -84,7 +84,7 @@ def brain_kmeans_cbk() -> List[List[int]]:
     # Displaying the plots
 
     plt.tight_layout()
-    plt.show()
+    plt.show(block=False)
 
     # Asking user for the number of clusters they would like to set for clustering protocol
     cluster_set = string_to_int_list(
@@ -119,8 +119,7 @@ def brain_kmeans_cbk() -> List[List[int]]:
     wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
 
     if wants_to_save.lower() in ['y', 'yes', 'yeah', 'yep', 'yup']:
-        name_of_file = input("What would you like to name the file?: ")
-        name_of_file = name_of_file.replace(".csv", "")
+        name_of_file = input("What would you like to name the file?: ").replace(".csv", "")
 
         df.to_csv(f"{name_of_file}.csv", index=False)
 
