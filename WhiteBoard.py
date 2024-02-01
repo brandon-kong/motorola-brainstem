@@ -15,10 +15,11 @@ from lib.string_parse import string_to_int_list
 import matplotlib
 from matplotlib import cm
 
-#matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 
 
 cluster_label_prefix = 'cluster_'
+
 
 def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
     """
@@ -200,20 +201,17 @@ def do_kmeans_clustering(data: pd.DataFrame, n_clusters: int) -> List[int]:
     return cluster_labels
 
 
-
 def visualize_clusters(df_to_visualize: str):
-
     df = pd.read_csv(df_to_visualize, header=0, float_precision='high')
 
     x = df['X']
     y = df['Y']
     z = df['Z']
-    
+
     # Scatter plot with colored points based on cluster_id
 
     cluster_labels = get_cluster_labels_from_df(df)
     for i in range(len(cluster_labels)):
-
         fig = plt.figure()
 
         ax = fig.add_subplot(111, projection='3d')
@@ -226,7 +224,7 @@ def visualize_clusters(df_to_visualize: str):
         cmap = cm.get_cmap('rainbow', max(data) + 1)
 
         scatter = ax.scatter(x, y, z, c=data, cmap=cmap, alpha=0.6)
-        
+
         ax.set_xlabel('X Label')
         ax.set_ylabel('Y Label')
         ax.set_zlabel('Z Label')
@@ -234,15 +232,13 @@ def visualize_clusters(df_to_visualize: str):
         # Add a colorbar
         colorbar = fig.colorbar(scatter, ax=ax, label='Cluster ID')
 
-    # Show the plot
+        # Show the plot
         plt.show()
 
     # Customize the plot
-    
-    
+
 
 def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
-
     labels = []
 
     for (columnName, columnData) in df.items():
@@ -251,10 +247,107 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
         if str_col_name.startswith(cluster_label_prefix):
             labels.append({
                 'label': str_col_name,
+                'num_clusters': max(columnData) + 1,
                 'data': columnData
             })
 
     return labels
+
+
+def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
+    """
+    Computes the voxel information for each cluster
+
+    :param cluster_data_csv_path: The path to the cluster data
+    :return: The voxel information for each cluster
+    """
+
+    df = pd.read_csv(cluster_data_csv_path, header=0, float_precision='high')
+
+    new_den_c_path = input('Enter the path of the NewDenC.csv file: ') or 'data_files/NewDenC.csv'
+
+    new_den_c = pd.read_csv(new_den_c_path, header=0, float_precision='high')
+
+    cluster_labels = get_cluster_labels_from_df(df)
+
+    voxel_info = []
+
+    for i in range(len(cluster_labels)):
+
+        new_df = {}
+
+        cluster_label = cluster_labels[i]
+        cluster_num = cluster_label.get('num_clusters')
+        cluster_data = cluster_label.get('data')
+
+        # there should be cluster_num rows in the new dataframe for each cluster
+
+        new_df['cluster'] = [i for i in range(cluster_num)]
+
+        print(f"Generating voxel info for cluster: {cluster_num}")
+
+        # Get occurrences of each cluster
+        occurrences = {}
+        voxels = {}
+
+        for j in range(len(cluster_data)):
+            label = cluster_data[j]
+
+            if label in occurrences:
+                voxels[label].append(j)
+                occurrences[label] += 1
+            else:
+                voxels[label] = [j]
+                occurrences[label] = 1
+
+        # get a list of voxels for each cluster
+
+        print(f"Cluster Occurrences for {cluster_num} clusters: {occurrences}")
+
+        print("Percentages of occurrences: ")
+
+        # Sort the keys in the dictionary
+
+        percentages = []
+
+        for key in sorted(occurrences.keys()):
+            percent = float(occurrences[key] / len(cluster_data) * 100)
+            percentages.append(percent)
+            # print(f"Cluster {key}: {percent}%")
+
+        new_df['number of voxels (%)'] = percentages
+
+        structure_ids = []
+
+        # for each cluster, get the list of structure ids that are in that cluster
+
+        for key in voxels.keys():
+            voxel_list = voxels[key]
+
+            structure_id_list = []
+
+            for voxel in voxel_list:
+                structure_id = new_den_c.iloc[voxel]['Structure-ID']
+                structure_id_list.append(structure_id)
+
+            print(f"Structure IDs for cluster {key}: {structure_id_list}")
+
+            # new_df[f'cluster_{key}_structure_ids'] = structure_id_list
+
+        new_df = pd.DataFrame(new_df)
+
+        print(new_df.head(n=cluster_num))
+
+        wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
+
+        if wants_to_save.lower() in ['y', 'yes', 'yeah', 'yep', 'yup']:
+            name_of_file = input("What would you like to name the file?: ").replace(".csv", "")
+
+            new_df.to_csv(f"{name_of_file}.csv", index=False)
+
+            print(f"File saved as {name_of_file}.csv")
+
+    return voxel_info
 
 
 def brain_kmeans():
@@ -316,5 +409,6 @@ def brain_kmeans():
     # Show the plot
     plt.show()
 
+
 if __name__ == '__main__':
-    visualize_clusters('data_files/generated/chat252_clustered_xyz.csv')
+    compute_cluster_voxel_info('data_files/generated/chat252_clustered_xyz.csv')
