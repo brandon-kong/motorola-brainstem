@@ -14,7 +14,7 @@ from lib.string_parse import string_to_int_list
 # Choosing a matplotlib backend to ensure plot pop-up will deploy
 import matplotlib
 
-matplotlib.use('TkAgg')
+#matplotlib.use('TkAgg')
 
 
 cluster_label_prefix = 'cluster_'
@@ -106,6 +106,15 @@ def brain_kmeans_cbk() -> List[List[int]]:
 
         # Visualizations would go here
         visualize_clusters(filepath)
+        occurrences = {}
+
+        for label in cluster_labels:
+            if label in occurrences:
+                occurrences[label] += 1
+            else:
+                occurrences[label] = 1
+
+        print(f"\nCluster Occurrences for {cluster_set[i]} clusters: {occurrences}")
 
     # Load the XYZ data from the mutated dataset
     xyz_dfs = pd.read_csv('data_files/output_K1_mutate.csv', header=0, float_precision='high')
@@ -199,11 +208,13 @@ def visualize_clusters(df_to_visualize: str):
     # Scatter plot with colored points based on cluster_id
 
     cluster_labels = get_cluster_labels_from_df(df)
-
     for i in range(len(cluster_labels)):
 
-        scatter = ax.scatter(x, y, z, c=cluster_labels[i], cmap='viridis')
-        
+        label = cluster_labels[i]
+
+        scatter = ax.scatter(x, y, z, c=label.get('data'), cmap='viridis')
+
+        ax.set_title(f'Cluster Plot for label {label.get("label")}')
         ax.set_xlabel('X Label')
         ax.set_ylabel('Y Label')
         ax.set_zlabel('Z Label')
@@ -212,13 +223,13 @@ def visualize_clusters(df_to_visualize: str):
         colorbar = fig.colorbar(scatter, ax=ax, label='Cluster ID')
 
     # Show the plot
-        plt.show(block=True)
+        plt.show()
 
     # Customize the plot
     
     
 
-def get_cluster_labels_from_df(df: pd.DataFrame) -> List[List[int]]:
+def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
 
     labels = []
 
@@ -226,10 +237,13 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[List[int]]:
         strColName = str(columnName)
 
         if strColName.startswith(cluster_label_prefix):
-            labels.append(df[strColName])
+            labels.append({
+                'label': strColName,
+                'data': columnData
+            })
 
     return labels
 
 
 if __name__ == '__main__':
-    visualize_clusters('data_files/generated/gas6_clustered_xyz.csv')
+    visualize_clusters('data_files/generated/chat252_clustered_xyz.csv')

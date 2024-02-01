@@ -35,6 +35,7 @@ def get_gas_gene_data ():
         print(f"File saved as {name_of_file}.csv")
 
     print("Thanks!")
+
     
 if __name__ == "__main__":
-    get_gas_gene_data()
+    get_chat252_gene_data()
