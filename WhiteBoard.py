@@ -13,6 +13,7 @@ from lib.string_parse import string_to_int_list
 
 # Choosing a matplotlib backend to ensure plot pop-up will deploy
 import matplotlib
+from matplotlib import cm
 
 matplotlib.use('TkAgg')
 
@@ -209,7 +210,10 @@ def visualize_clusters(df_to_visualize: str):
         data = cluster_labels[i].get('data')
 
         ax.set_title(f'Cluster label for {label}')
-        scatter = ax.scatter(x, y, z, c=data, cmap='viridis')
+
+        cmap = cm.get_cmap('rainbow', max(data) + 1)
+
+        scatter = ax.scatter(x, y, z, c=data, cmap=cmap, alpha=0.6)
         
         ax.set_xlabel('X Label')
         ax.set_ylabel('Y Label')
