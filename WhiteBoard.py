@@ -189,8 +189,7 @@ def visualize_clusters(df_to_visualize: str):
 
     df = pd.read_csv(df_to_visualize, header=0, float_precision='high')
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    
 
     x = df['X']
     y = df['Y']
@@ -202,7 +201,15 @@ def visualize_clusters(df_to_visualize: str):
 
     for i in range(len(cluster_labels)):
 
-        scatter = ax.scatter(x, y, z, c=cluster_labels[i], cmap='viridis')
+        fig = plt.figure()
+
+        ax = fig.add_subplot(111, projection='3d')
+
+        label = cluster_labels[i].get('label')
+        data = cluster_labels[i].get('data')
+
+        ax.set_title(f'Cluster label for {label}')
+        scatter = ax.scatter(x, y, z, c=data, cmap='viridis')
         
         ax.set_xlabel('X Label')
         ax.set_ylabel('Y Label')
@@ -226,7 +233,10 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[List[int]]:
         strColName = str(columnName)
 
         if strColName.startswith(cluster_label_prefix):
-            labels.append(df[strColName])
+            labels.append({
+                'label': columnName,
+                'data': columnData
+            })
 
     return labels
 
