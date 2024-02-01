@@ -330,7 +330,24 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
                 structure_id = new_den_c.iloc[voxel]['Structure-ID']
                 structure_id_list.append(structure_id)
 
-            print(f"Structure IDs for cluster {key}: {structure_id_list}")
+            # get occurrences of each structure id
+
+            struct_occurrences = {}
+
+            for structure_id in structure_id_list:
+                if structure_id in struct_occurrences:
+                    struct_occurrences[int(structure_id)] += 1
+                else:
+                    struct_occurrences[int(structure_id)] = 1
+
+            print(struct_occurrences)
+
+            for key in sorted(struct_occurrences.keys()):
+                df[f'structure {key}'] = [struct_occurrences[key] for i in range(cluster_num)]
+
+            print(f"Occurrences of Structure ID for cluster {key}: {struct_occurrences}")
+
+            print(f"Number of unique structure ids for cluster {key}: {len(struct_occurrences)}")
 
             # new_df[f'cluster_{key}_structure_ids'] = structure_id_list
 
