@@ -317,9 +317,23 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
 
         new_df['number of voxels (%)'] = percentages
 
-        structure_ids = []
+        structure_ids = {}
+
+        used_structure_ids = set()
 
         # for each cluster, get the list of structure ids that are in that cluster
+
+        for key in voxels.keys():
+            voxel_list = voxels[key]
+
+            for voxel in voxel_list:
+                structure_id = new_den_c.iloc[voxel]['Structure-ID']
+                used_structure_ids.add(structure_id)
+
+        for j in used_structure_ids:
+            structure_ids[int(j)] = []
+
+        print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
 
         for key in voxels.keys():
             voxel_list = voxels[key]
@@ -330,26 +344,29 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
                 structure_id = new_den_c.iloc[voxel]['Structure-ID']
                 structure_id_list.append(structure_id)
 
-            # get occurrences of each structure id
-
-            struct_occurrences = {}
+            structure_id_list_occurences = {}
 
             for structure_id in structure_id_list:
-                if structure_id in struct_occurrences:
-                    struct_occurrences[int(structure_id)] += 1
+                if structure_id in structure_id_list_occurences:
+                    structure_id_list_occurences[structure_id] += 1
                 else:
-                    struct_occurrences[int(structure_id)] = 1
+                    structure_id_list_occurences[structure_id] = 1
 
-            print(struct_occurrences)
+            total_num_structure_ids = 0
 
-            for key in sorted(struct_occurrences.keys()):
-                df[f'structure {key}'] = [struct_occurrences[key] for i in range(cluster_num)]
+            for struct_key in structure_id_list_occurences.keys():
+                total_num_structure_ids += structure_id_list_occurences[struct_key]
 
-            print(f"Occurrences of Structure ID for cluster {key}: {struct_occurrences}")
+            percentages = []
 
-            print(f"Number of unique structure ids for cluster {key}: {len(struct_occurrences)}")
-
-            # new_df[f'cluster_{key}_structure_ids'] = structure_id_list
+            print(f'\nCluster {key} structure id percentages: ')
+            for key in sorted(structure_id_list_occurences.keys()):
+                percent = float(structure_id_list_occurences[key] / total_num_structure_ids * 100)
+                
+                # initialize structure_ids dictionary
+                
+        for j in used_structure_ids:
+            new_df[f'structure {int(j)}'] = structure_ids[int(j)]
 
         new_df = pd.DataFrame(new_df)
 
