@@ -13,6 +13,7 @@ from lib.string_parse import string_to_int_list
 
 # Choosing a matplotlib backend to ensure plot pop-up will deploy
 import matplotlib
+from matplotlib import cm
 
 #matplotlib.use('TkAgg')
 
@@ -198,9 +199,6 @@ def visualize_clusters(df_to_visualize: str):
 
     df = pd.read_csv(df_to_visualize, header=0, float_precision='high')
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-
     x = df['X']
     y = df['Y']
     z = df['Z']
@@ -210,11 +208,19 @@ def visualize_clusters(df_to_visualize: str):
     cluster_labels = get_cluster_labels_from_df(df)
     for i in range(len(cluster_labels)):
 
-        label = cluster_labels[i]
+        fig = plt.figure()
 
-        scatter = ax.scatter(x, y, z, c=label.get('data'), cmap='viridis')
+        ax = fig.add_subplot(111, projection='3d')
 
-        ax.set_title(f'Cluster Plot for label {label.get("label")}')
+        label = cluster_labels[i].get('label')
+        data = cluster_labels[i].get('data')
+
+        ax.set_title(f'Cluster label for {label}')
+
+        cmap = cm.get_cmap('rainbow', max(data) + 1)
+
+        scatter = ax.scatter(x, y, z, c=data, cmap=cmap, alpha=0.6)
+        
         ax.set_xlabel('X Label')
         ax.set_ylabel('Y Label')
         ax.set_zlabel('Z Label')
@@ -234,11 +240,11 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
     labels = []
 
     for (columnName, columnData) in df.items():
-        strColName = str(columnName)
+        str_col_name = str(columnName)
 
-        if strColName.startswith(cluster_label_prefix):
+        if str_col_name.startswith(cluster_label_prefix):
             labels.append({
-                'label': strColName,
+                'label': str_col_name,
                 'data': columnData
             })
 
