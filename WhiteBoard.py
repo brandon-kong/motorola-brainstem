@@ -3,22 +3,22 @@
 
 # Loading global packages
 from typing import List
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy.cluster.hierarchy import linkage, dendrogram
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
-from mpl_toolkits.mplot3d import Axes3D  # Import for 3-D plotting
 from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
+
+# Local packages
+from lib.string_parse import string_to_int_list
 
 # Choosing a matplotlib backend to ensure plot pop-up will deploy
 import matplotlib
+from matplotlib import cm
 
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
+
+
+cluster_label_prefix = 'cluster_'
 
 
 def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
@@ -34,27 +34,366 @@ def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
     kmeans: KMeans = KMeans(n_clusters=n_clusters, random_state=25)
     cluster_labels: List[int] = kmeans.fit_predict(df)
 
-    # Visualizing the clustering results using PCA (with 3 components)
-    pca = PCA(n_components=3)
-    reduced_data = pca.fit_transform(df)
-    reduced_df = pd.DataFrame(reduced_data, columns=['PC1', 'PC2', 'PC3'])
-    reduced_df['Cluster'] = cluster_labels
+    return cluster_labels
 
-    # Generating 3-D scatter plot
-    # For now, hold off on the visualizations
+
+###################################################################################################################
+
+
+def brain_kmeans_cbk() -> List[List[int]]:
+    """
+    Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
+    :return: Cluster labels
+    """
+
+    name = input("What is your name? ")
+    print(f"\nHey {name}! This is brain_kmeans_cbk(). Doing some cool stuff now...")
+
+    # Asking for filepath to be analyzed
+    filepath = input("\nEnter file to be k-mean'ed: ")
+
+    # Loading CSV file with pandas package
+    df = pd.read_csv(filepath, header=0, float_precision='high')
+    new_df = {}
+
+    # Printing head table to ensure proper loading of data
+    print(f"\nHEAD TABLE OF LOADED DATA FRAME: {filepath}")
+    print(df.head())
+
+    # Asking for a max number of clusters
+    max_clusters = int(input("\nEnter the maximum number of k-means clusters: "))
+
+    # Calculating the SSEs within clusters (the inertia's)
+
+    inertias = []
+    for k in range(1, max_clusters + 1):
+        kmeans = KMeans(n_clusters=k, random_state=35)
+        kmeans.fit(df)
+        inertias.append(kmeans.inertia_)
+
+    # Plotting the knee plot
+    plot_knee_plot(max_clusters, inertias)
+
+    # Calculating silhouette scores for given number of clusters
+    silhouette_scores = []
+    for k in range(2, max_clusters + 2):
+        kmeans = KMeans(n_clusters=k, random_state=35)
+        labels = kmeans.fit_predict(df)
+        silhouette_avg = silhouette_score(df, labels)
+        silhouette_scores.append(silhouette_avg)
+
+    # Plotting silhouette plot
+    plot_silhouette_plot(max_clusters, silhouette_scores)
+
+    # Displaying the plots
+
+    plt.tight_layout()
+    plt.show(block=False)
+
+    # Asking user for the number of clusters they would like to set for clustering protocol
+    cluster_set = string_to_int_list(
+        input("\nBased on the previous results, how many clusters would you like to set?: "))
+
+    # Performing k-means
+
+    cluster_results: List[List[int]] = []
+
+    for i in range(len(cluster_set)):
+        cluster_labels = do_kmeans_clustering(df, cluster_set[i])
+
+        new_df[f'{cluster_label_prefix}{cluster_set[i]}'] = cluster_labels
+
+        # Appending the cluster results to the cluster_results list
+        cluster_results.append(cluster_labels)
+
+        # Visualizations would go here
+        # visualize_clusters(filepath)
+        occurrences = {}
+
+        for label in cluster_labels:
+            if label in occurrences:
+                occurrences[label] += 1
+            else:
+                occurrences[label] = 1
+
+        print(f"\nCluster Occurrences for {cluster_set[i]} clusters: {occurrences}")
+
+    # Load the XYZ data from the mutated dataset
+    xyz_dfs = pd.read_csv('data_files/output_K1_mutate.csv', header=0, float_precision='high')
+
+    # Add all the gene data to the df_data
+
+    for (columnName, columnData) in xyz_dfs.items():
+        if (columnName in df) or columnName in ['X', 'Y', 'Z']:
+            new_df[columnName] = columnData
+
+    # Add the focused genes to the df_data as well
+
+    for (columnName, columnData) in df.items():
+        if columnName in df:
+            new_df[columnName] = columnData
+
+    df = pd.DataFrame(new_df)
+
+    print(df.head())
+
+    wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
+
+    if wants_to_save.lower() in ['y', 'yes', 'yeah', 'yep', 'yup']:
+        name_of_file = input("What would you like to name the file?: ").replace(".csv", "")
+
+        df.to_csv(f"{name_of_file}.csv", index=False)
+
+        print(f"File saved as {name_of_file}.csv")
+
+    print(f"Have a nice day, {name}!")
+
+    # Returning the list of cluster results
+    return cluster_results
+
+
+def plot_knee_plot(max_clusters: int, inertias: List[float]):
+    """
+    Plots the knee plot for the k-means clustering
+
+    :param max_clusters:
+    :param inertias:
+    :return:
+    """
+
+    plt.figure(figsize=(12, 6))
+    plt.subplot(1, 2, 1)
+    plt.plot(range(1, max_clusters + 1), inertias, marker='o')
+    plt.title('\nKnee Plot for K-Means')
+    plt.xlabel('Number of k-clusters')
+    plt.ylabel('Inertia (SSE within clusters)')
+    plt.grid(True)
+
+
+def plot_silhouette_plot(max_clusters: int, scores: List[float]):
+    """
+    Plots the silhouette plot for the k-means clustering
+
+    :param max_clusters:
+    :param scores:
+    :return:
+    """
+
+    plt.subplot(1, 2, 2)
+    plt.plot(range(1, max_clusters + 1), scores, marker='o')
+    plt.title("\nSilhouette Plot for K-Means")
+    plt.xlabel('Number of Clusters')
+    plt.ylabel('Silhouette Score')
+    plt.grid(True)
+
+
+def do_kmeans_clustering(data: pd.DataFrame, n_clusters: int) -> List[int]:
+    """
+    Performs K-Means clustering on a given data frame
+
+    :param data: The data frame to perform K-Means clustering on
+    :param n_clusters: The number of clusters to generate
+    :return: Cluster labels
+    """
+    kmeans: KMeans = KMeans(n_clusters=n_clusters, random_state=25)
+    cluster_labels: List[int] = kmeans.fit_predict(data)
 
     return cluster_labels
 
 
-def brain_kmeansREDUX():
+def visualize_clusters(df_to_visualize: str):
+    df = pd.read_csv(df_to_visualize, header=0, float_precision='high')
+
+    x = df['X']
+    y = df['Y']
+    z = df['Z']
+
+    # Scatter plot with colored points based on cluster_id
+
+    cluster_labels = get_cluster_labels_from_df(df)
+    for i in range(len(cluster_labels)):
+        fig = plt.figure()
+
+        ax = fig.add_subplot(111, projection='3d')
+
+        label = cluster_labels[i].get('label')
+        data = cluster_labels[i].get('data')
+
+        ax.set_title(f'Cluster label for {label}')
+
+        cmap = cm.get_cmap('rainbow', max(data) + 1)
+
+        scatter = ax.scatter(x, y, z, c=data, cmap=cmap, alpha=0.6)
+
+        ax.set_xlabel('X Label')
+        ax.set_ylabel('Y Label')
+        ax.set_zlabel('Z Label')
+
+        # Add a colorbar
+        colorbar = fig.colorbar(scatter, ax=ax, label='Cluster ID')
+
+        # Show the plot
+        plt.show()
+
+    # Customize the plot
+
+
+def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
+    labels = []
+
+    for (columnName, columnData) in df.items():
+        str_col_name = str(columnName)
+
+        if str_col_name.startswith(cluster_label_prefix):
+            labels.append({
+                'label': str_col_name,
+                'num_clusters': max(columnData) + 1,
+                'data': columnData
+            })
+
+    return labels
+
+
+def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
     """
+    Computes the voxel information for each cluster
+
+    :param cluster_data_csv_path: The path to the cluster data
+    :return: The voxel information for each cluster
+    """
+
+    df = pd.read_csv(cluster_data_csv_path, header=0, float_precision='high')
+
+    new_den_c_path = input('Enter the path of the NewDenC.csv file: ') or 'data_files/NewDenC.csv'
+
+    new_den_c = pd.read_csv(new_den_c_path, header=0, float_precision='high')
+
+    cluster_labels = get_cluster_labels_from_df(df)
+
+    voxel_info = []
+
+    for i in range(len(cluster_labels)):
+
+        new_df = {}
+
+        cluster_label = cluster_labels[i]
+        cluster_num = cluster_label.get('num_clusters')
+        cluster_data = cluster_label.get('data')
+
+        # there should be cluster_num rows in the new dataframe for each cluster
+
+        new_df['cluster'] = [i for i in range(cluster_num)]
+
+        print(f"Generating voxel info for cluster: {cluster_num}")
+
+        # Get occurrences of each cluster
+        occurrences = {}
+        voxels = {}
+
+        for j in range(len(cluster_data)):
+            label = cluster_data[j]
+
+            if label in occurrences:
+                voxels[label].append(j)
+                occurrences[label] += 1
+            else:
+                voxels[label] = [j]
+                occurrences[label] = 1
+
+        # get a list of voxels for each cluster
+
+        print(f"Cluster Occurrences for {cluster_num} clusters: {occurrences}")
+
+        print("Percentages of occurrences: ")
+
+        # Sort the keys in the dictionary
+
+        percentages = []
+
+        for key in sorted(occurrences.keys()):
+            percent = float(occurrences[key] / len(cluster_data) * 100)
+            percentages.append(percent)
+            # print(f"Cluster {key}: {percent}%")
+
+        new_df['number of voxels (%)'] = percentages
+
+        structure_ids = {}
+
+        used_structure_ids = set()
+
+        # for each cluster, get the list of structure ids that are in that cluster
+
+        for key in voxels.keys():
+            voxel_list = voxels[key]
+
+            for voxel in voxel_list:
+                structure_id = new_den_c.iloc[voxel]['Structure-ID']
+                used_structure_ids.add(structure_id)
+
+        for j in used_structure_ids:
+            structure_ids[int(j)] = []
+
+        print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
+
+        for key in voxels.keys():
+            voxel_list = voxels[key]
+
+            structure_id_list = []
+
+            for voxel in voxel_list:
+                structure_id = new_den_c.iloc[voxel]['Structure-ID']
+                structure_id_list.append(structure_id)
+
+            structure_id_list_occurences = {}
+
+            for structure_id in structure_id_list:
+                if structure_id in structure_id_list_occurences:
+                    structure_id_list_occurences[structure_id] += 1
+                else:
+                    structure_id_list_occurences[structure_id] = 1
+
+            total_num_structure_ids = 0
+
+            for struct_key in structure_id_list_occurences.keys():
+                total_num_structure_ids += structure_id_list_occurences[struct_key]
+
+            percentages = []
+
+            print(f'\nCluster {key} structure id percentages: ')
+            for key in sorted(structure_id_list_occurences.keys()):
+                percent = float(structure_id_list_occurences[key] / total_num_structure_ids * 100)
+                
+                # initialize structure_ids dictionary
+                
+        for j in used_structure_ids:
+            new_df[f'structure {int(j)}'] = structure_ids[int(j)]
+
+        new_df = pd.DataFrame(new_df)
+
+        print(new_df.head(n=cluster_num))
+
+        wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
+
+        if wants_to_save.lower() in ['y', 'yes', 'yeah', 'yep', 'yup']:
+            name_of_file = input("What would you like to name the file?: ").replace(".csv", "")
+
+            new_df.to_csv(f"{name_of_file}.csv", index=False)
+
+            print(f"File saved as {name_of_file}.csv")
+
+    return voxel_info
+
+
+def brain_kmeans():
+    """
+    STILL IN DEVELOPMENT
     Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
 
     :return: Cluster labels
     """
 
     # User greeting
-    print("\nHey Colin! This is brain_kmeansREDUX(). Booting up protocol now...")
+    print("\nHey Colin! This is the ongoing development of brain_kmeans(). \nBooting up protocol now...")
 
     # Asking for filepath to be analyzed
     filepath = input("\nEnter file to be k-mean'ed: ")
@@ -66,156 +405,44 @@ def brain_kmeansREDUX():
     print(f"\nHEAD TABLE OF LOADED DATA FRAME: {filepath}")
     print(df.head())
 
-    # Asking for a max number of clusters
-    max_clusters = int(input("\nEnter the maximum number of k-means clusters: "))
+    # Asking what cluster parameter/ID to label
+    print("\nOf the 4 options: {4, 6, 8, 13}...")
+    cluster_choice = input("How many clusters would you like to visualize?: ")
+    if cluster_choice == '4':
+        cluster_id = df['cluster_4']
+    elif cluster_choice == '6':
+        cluster_id = df['cluster_6']
+    elif cluster_choice == '8':
+        cluster_id = df['cluster_8']
+    elif cluster_choice == '13':
+        cluster_id = df['cluster_13']
+    else:
+        print("Invalid cluster choice. Play nice :( ")
+        return
 
-    # Calculating the SSEs within clusters (the inertias)
-    inertias = []
-    for k in range(1, max_clusters + 1):
-        kmeans = KMeans(n_clusters=k, random_state=35)
-        kmeans.fit(df)
-        inertias.append(kmeans.inertia_)
+    # Extracting x, y, z coordinates
+    x = df['X']
+    y = df['Y']
+    z = df['Z']
 
-    # Plotting knee plot
-    plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-    plt.plot(range(1, max_clusters + 1), inertias, marker='o')
-    plt.title('\nKnee Plot for K-Means')
-    plt.xlabel('Number of k-clusters')
-    plt.ylabel('Intertia (SSE within clusters)')
-    plt.grid(True)
-
-    # Calculating silhouette scores for given number of clusters
-    silhouette_scores = []
-    for k in range(2, max_clusters + 2):
-        kmeans = KMeans(n_clusters=k, random_state=35)
-        labels = kmeans.fit_predict(df)
-        silhouette_avg = silhouette_score(df, labels)
-        silhouette_scores.append(silhouette_avg)
-
-    # Plotting silhouette plot
-    plt.subplot(1, 2, 2)
-    plt.plot(range(1, max_clusters + 1), silhouette_scores, marker='o')
-    plt.title("\nSilhouette Plot for K-Means")
-    plt.xlabel('Number of Clusters')
-    plt.ylabel('Silhouette Score')
-    plt.grid(True)
-
-    plt.tight_layout()
-    plt.show()
-
-    # Asking user for the number of clusters they would like to set for clustering protocol
-    cluster_set = int(input("\nBased on the previous results, how many clusters would you like to set?: "))
-
-    # Performing k-means
-    kmeans = KMeans(n_clusters=cluster_set, random_state=25)
-    cluster_labels = kmeans.fit_predict(df)
-
-    # Visualizing the clustering results using PCA (with 3 components)
-    pca = PCA(n_components=3)
-    reduced_data = pca.fit_transform(df)
-    reduced_df = pd.DataFrame(reduced_data, columns=['PC1', 'PC2', 'PC3'])
-    reduced_df['Cluster'] = cluster_labels
-
-    # Generating 3-D scatter plot
-    fig = plt.figure(figsize=(12, 8))
+    # Create a 3D scatter plot
+    fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(reduced_df['PC1'], reduced_df['PC2'], reduced_df['PC3'], c=cluster_labels, cmap='viridis')
-    ax.set_title('K-Means Clustering Results (3-D Projection)')
-    ax.set_xlabel('PC1')
-    ax.set_ylabel('PC2')
-    ax.set_zlabel('PC3')
 
+    # Scatter plot with colored points based on cluster_id
+    scatter = ax.scatter(x, y, z, c=cluster_id, cmap='viridis')
+
+    # Customize the plot
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+
+    # Add a colorbar
+    colorbar = fig.colorbar(scatter, ax=ax, label='Cluster ID')
+
+    # Show the plot
     plt.show()
-
-    # Returning the cluster labels
-    return(cluster_labels)
-
-###################################################################################################################
-def brain_kmeansREDUX2():
-    """
-    Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
-
-    :return: Cluster labels
-    """
-
-    # User greeting
-    print("\nHey Colin! This is brainREDUX2(). Booting up protocol now...")
-
-    # Asking for filepath to be analyzed
-    filepath = input("\nEnter file to be k-mean'ed: ")
-
-    # Loading CSV file with pandas package
-    df = pd.read_csv(filepath, header=0, float_precision='high')
-
-    # Printing head table to ensure proper loading of data
-    print(f"\nHEAD TABLE OF LOADED DATA FRAME: {filepath}")
-    print(df.head())
-
-    # Asking for a max number of clusters
-    max_clusters = int(input("\nEnter the maximum number of k-means clusters: "))
-
-    # Calculating the SSEs within clusters (the inertias)
-    inertias = []
-    for k in range(1, max_clusters + 1):
-        kmeans = KMeans(n_clusters=k, random_state=35)
-        kmeans.fit(df)
-        inertias.append(kmeans.inertia_)
-
-    # Plotting knee plot
-    plt.figure(figsize=(12, 6))
-    plt.subplot(1, 2, 1)
-    plt.plot(range(1, max_clusters + 1), inertias, marker='o')
-    plt.title('\nKnee Plot for K-Means')
-    plt.xlabel('Number of k-clusters')
-    plt.ylabel('Intertia (SSE within clusters)')
-    plt.grid(True)
-
-    # Calculating silhouette scores for given number of clusters
-    silhouette_scores = []
-    for k in range(2, max_clusters + 2):
-        kmeans = KMeans(n_clusters=k, random_state=35)
-        labels = kmeans.fit_predict(df)
-        silhouette_avg = silhouette_score(df, labels)
-        silhouette_scores.append(silhouette_avg)
-
-    # Plotting silhouette plot
-    plt.subplot(1, 2, 2)
-    plt.plot(range(1, max_clusters + 1), silhouette_scores, marker='o')
-    plt.title("\nSilhouette Plot for K-Means")
-    plt.xlabel('Number of Clusters')
-    plt.ylabel('Silhouette Score')
-    plt.grid(True)
-
-    plt.tight_layout()
-    plt.show()
-
-    # Asking user for the number of clusters they would like to set for clustering protocol
-    cluster_set = int(input("\nBased on the previous results, how many clusters would you like to set?: "))
-
-    # Asking user for the three features to use for 3-D projection
-    x_feature = input("\nEnter the name of the feature for the x-axis: ")
-    y_feature = input("Enter the name of the feature for the y-axis: ")
-    z_feature = input("Enter the name of the feature for the z-axis: ")
-
-    # Performing k-means
-    kmeans = KMeans(n_clusters=cluster_set, random_state=25)
-    cluster_labels = kmeans.fit_predict(df)
-
-    # Generating 3-D scatter plot
-    fig = plt.figure(figsize=(12, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(df[x_feature], df[y_feature], df[z_feature], c=cluster_labels, cmap='viridis')
-    ax.set_title('K-Means Clustering Results (3-D Projection)')
-    ax.set_xlabel(x_feature)
-    ax.set_ylabel(y_feature)
-    ax.set_zlabel(z_feature)
-
-    plt.show()
-
-    # Returning the cluster labels
-    return(cluster_labels)
 
 
 if __name__ == '__main__':
-    brain_kmeansREDUX()
+    compute_cluster_voxel_info('data_files/generated/chat252_clustered_xyz.csv')

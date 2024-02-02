@@ -65,7 +65,7 @@ def generate_voxel_cluster_ids_data(
     df_data['X'] = xyz_dfs['X']
     df_data['Y'] = xyz_dfs['Y']
     df_data['Z'] = xyz_dfs['Z']
-    
+
     # Load the gene data from the original dataset
         
     gene_dfs = pd.read_csv('data_files/output_K1.csv', header=0, float_precision='high')
