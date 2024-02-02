@@ -51,7 +51,7 @@ def generate_voxel_cluster_ids_data(
         # Compute the occurences of each cluster group
         occurence_dict = get_occurence_dict(clustering_results)
 
-        print(f"Occurence dict for cluster number {cluster_num_list[i]}: ")
+        print(f"Occurence dictionary for cluster number {cluster_num_list[i]}: ")
         
         for key, value in occurence_dict.items():
             print(f"{key}: {value}")
