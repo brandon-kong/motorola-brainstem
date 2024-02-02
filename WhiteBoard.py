@@ -334,7 +334,7 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
                 used_structure_ids.add(structure_id)
 
         for j in used_structure_ids:
-            structure_ids[int(j)] = []
+            structure_ids[int(j)] = [0] * cluster_num
 
         print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
 
@@ -365,11 +365,16 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
             print(f'\nCluster {key} structure id percentages: ')
             for struct_key in sorted(structure_id_list_occurrences.keys()):
                 percent = float(structure_id_list_occurrences[struct_key] / total_num_structure_ids * 100)
-                
+                print(f"Structure {struct_key}: {percent}%")
+
+                structure_ids[int(struct_key)][key] = structure_id_list_occurrences[struct_key]
+
                 # initialize structure_ids dictionary
+
+        print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
                 
         for j in used_structure_ids:
-            # new_df[f'structure {int(j)}'] = structure_ids[int(j)]
+            new_df[f'structure {int(j)}'] = structure_ids[int(j)]
             pass
 
         new_df = pd.DataFrame(new_df)
