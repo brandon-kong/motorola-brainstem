@@ -221,13 +221,9 @@ def visualize_clusters(df_to_visualize: str):
 
         ax.set_title(f'Cluster label for {label}')
 
-        # custom_colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'brown', 'gray', 'cyan', 'magenta', 'lime', 'navy']
-
         cmap = cm.get_cmap('rainbow', max(data) + 1)
 
         scatter = ax.scatter(x, y, z, c=data, cmap=cmap, alpha=0.6)
-
-        # scatter = ax.scatter(x, y, z, c=[custom_colors[i] for i in data], alpha=0.6)
 
         ax.set_xlabel('X Label')
         ax.set_ylabel('Y Label')
@@ -258,11 +254,9 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
     return labels
 
 
-def compute_cluster_voxel_quantities(cluster_data_csv_path: str) -> List[dict]:
+def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
     """
-    Computes the voxel information for each cluster id detected in the 
-    csv file provided. This will help us with quantitative analysis for each cluster.
-    This function is still in development.
+    Computes the voxel information for each cluster
 
     :param cluster_data_csv_path: The path to the cluster data
     :return: The voxel information for each cluster
@@ -293,7 +287,6 @@ def compute_cluster_voxel_quantities(cluster_data_csv_path: str) -> List[dict]:
         print(f"Generating voxel info for cluster: {cluster_num}")
 
         # Get occurrences of each cluster
-
         occurrences = {}
         voxels = {}
 
@@ -307,20 +300,24 @@ def compute_cluster_voxel_quantities(cluster_data_csv_path: str) -> List[dict]:
                 voxels[label] = [j]
                 occurrences[label] = 1
 
-        print(f"Occurrences for cluster {cluster_num}: {occurrences}")
+        # get a list of voxels for each cluster
+
+        print(f"Cluster Occurrences for {cluster_num} clusters: {occurrences}")
+
+        print("Percentages of occurrences: ")
+
+        # Sort the keys in the dictionary
 
         percentages = []
+        voxel_counts = []
 
         for key in sorted(occurrences.keys()):
+            voxel_counts.append(occurrences[key])
             percent = float(occurrences[key] / len(cluster_data) * 100)
             percentages.append(percent)
+            # print(f"Cluster {key}: {percent}%")
 
-        # also add the number of voxels in the cluster to the new dataframe
-
-        new_df['number of voxels'] = [len(voxels[key]) for key in sorted(voxels.keys())]
-
-        # number of voxels as a percentage
-
+        new_df['number of voxels'] = voxel_counts
         new_df['number of voxels (%)'] = percentages
 
         structure_ids = {}
@@ -337,12 +334,9 @@ def compute_cluster_voxel_quantities(cluster_data_csv_path: str) -> List[dict]:
                 used_structure_ids.add(structure_id)
 
         for j in used_structure_ids:
-            structure_ids[int(j)] = []
+            structure_ids[int(j)] = [0] * cluster_num
 
-        structure_id_columns = {}
-
-        for j in used_structure_ids:
-            structure_id_columns[int(j)] = []
+        print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
 
         for key in voxels.keys():
             voxel_list = voxels[key]
@@ -353,35 +347,34 @@ def compute_cluster_voxel_quantities(cluster_data_csv_path: str) -> List[dict]:
                 structure_id = new_den_c.iloc[voxel]['Structure-ID']
                 structure_id_list.append(structure_id)
 
-            structure_id_list_occurences = {}
+            structure_id_list_occurrences = {}
 
             for structure_id in structure_id_list:
-                if structure_id in structure_id_list_occurences:
-                    structure_id_list_occurences[structure_id] += 1
+                if structure_id in structure_id_list_occurrences:
+                    structure_id_list_occurrences[structure_id] += 1
                 else:
-                    structure_id_list_occurences[structure_id] = 1
+                    structure_id_list_occurrences[structure_id] = 1
 
             total_num_structure_ids = 0
 
-            for struct_key in structure_id_list_occurences.keys():
-                total_num_structure_ids += structure_id_list_occurences[struct_key]
+            for struct_key in structure_id_list_occurrences.keys():
+                total_num_structure_ids += structure_id_list_occurrences[struct_key]
 
             percentages = []
 
-            for key in (structure_id_list_occurences.keys()):
+            print(f'\nCluster {key} structure id percentages: ')
+            for struct_key in sorted(structure_id_list_occurrences.keys()):
+                percent = float(structure_id_list_occurrences[struct_key] / total_num_structure_ids * 100)
+                print(f"Structure {struct_key}: {percent}%")
 
-                structure_id_columns[int(key)].append(structure_id_list_occurences[key])
-                percent = float(structure_id_list_occurences[key] / total_num_structure_ids * 100)
+                structure_ids[int(struct_key)][key] = structure_id_list_occurrences[struct_key]
 
-            for key in used_structure_ids:
-                if key not in structure_id_list_occurences:
-                    structure_id_columns[int(key)].append(0)
-                
                 # initialize structure_ids dictionary
+
+        print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
                 
         for j in used_structure_ids:
-            
-            new_df[f'structure {int(j)}'] = structure_id_columns[int(j)]
+            new_df[f'structure {int(j)}'] = structure_ids[int(j)]
             pass
 
         new_df = pd.DataFrame(new_df)
@@ -461,4 +454,4 @@ def brain_kmeans():
 
 
 if __name__ == '__main__':
-    compute_cluster_voxel_quantities('data_files/generated/chat252_clustered_xyz.csv')
+    compute_cluster_voxel_info('data_files/generated/chat252_clustered_xyz.csv')
