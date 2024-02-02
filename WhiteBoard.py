@@ -221,9 +221,13 @@ def visualize_clusters(df_to_visualize: str):
 
         ax.set_title(f'Cluster label for {label}')
 
+        # custom_colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'brown', 'gray', 'cyan', 'magenta', 'lime', 'navy']
+
         cmap = cm.get_cmap('rainbow', max(data) + 1)
 
         scatter = ax.scatter(x, y, z, c=data, cmap=cmap, alpha=0.6)
+
+        # scatter = ax.scatter(x, y, z, c=[custom_colors[i] for i in data], alpha=0.6)
 
         ax.set_xlabel('X Label')
         ax.set_ylabel('Y Label')
@@ -254,9 +258,11 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
     return labels
 
 
-def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
+def compute_cluster_voxel_quantities(cluster_data_csv_path: str) -> List[dict]:
     """
-    Computes the voxel information for each cluster
+    Computes the voxel information for each cluster id detected in the 
+    csv file provided. This will help us with quantitative analysis for each cluster.
+    This function is still in development.
 
     :param cluster_data_csv_path: The path to the cluster data
     :return: The voxel information for each cluster
@@ -287,6 +293,7 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
         print(f"Generating voxel info for cluster: {cluster_num}")
 
         # Get occurrences of each cluster
+
         occurrences = {}
         voxels = {}
 
@@ -300,20 +307,19 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
                 voxels[label] = [j]
                 occurrences[label] = 1
 
-        # get a list of voxels for each cluster
-
-        print(f"Cluster Occurrences for {cluster_num} clusters: {occurrences}")
-
-        print("Percentages of occurrences: ")
-
-        # Sort the keys in the dictionary
+        print(f"Occurrences for cluster {cluster_num}: {occurrences}")
 
         percentages = []
 
         for key in sorted(occurrences.keys()):
             percent = float(occurrences[key] / len(cluster_data) * 100)
             percentages.append(percent)
-            # print(f"Cluster {key}: {percent}%")
+
+        # also add the number of voxels in the cluster to the new dataframe
+
+        new_df['number of voxels'] = [len(voxels[key]) for key in sorted(voxels.keys())]
+
+        # number of voxels as a percentage
 
         new_df['number of voxels (%)'] = percentages
 
@@ -333,7 +339,10 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
         for j in used_structure_ids:
             structure_ids[int(j)] = []
 
-        print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
+        structure_id_columns = {}
+
+        for j in used_structure_ids:
+            structure_id_columns[int(j)] = []
 
         for key in voxels.keys():
             voxel_list = voxels[key]
@@ -359,14 +368,21 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
 
             percentages = []
 
-            print(f'\nCluster {key} structure id percentages: ')
-            for key in sorted(structure_id_list_occurences.keys()):
+            for key in (structure_id_list_occurences.keys()):
+
+                structure_id_columns[int(key)].append(structure_id_list_occurences[key])
                 percent = float(structure_id_list_occurences[key] / total_num_structure_ids * 100)
+
+            for key in used_structure_ids:
+                if key not in structure_id_list_occurences:
+                    structure_id_columns[int(key)].append(0)
                 
                 # initialize structure_ids dictionary
                 
         for j in used_structure_ids:
-            new_df[f'structure {int(j)}'] = structure_ids[int(j)]
+            
+            new_df[f'structure {int(j)}'] = structure_id_columns[int(j)]
+            pass
 
         new_df = pd.DataFrame(new_df)
 
@@ -445,4 +461,4 @@ def brain_kmeans():
 
 
 if __name__ == '__main__':
-    compute_cluster_voxel_info('data_files/generated/chat252_clustered_xyz.csv')
+    compute_cluster_voxel_quantities('data_files/generated/chat252_clustered_xyz.csv')
