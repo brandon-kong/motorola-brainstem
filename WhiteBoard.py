@@ -17,6 +17,7 @@ from matplotlib import cm
 
 # matplotlib.use('TkAgg')
 
+from lib.visualizer import show_distributions, show_scatter
 
 cluster_label_prefix = 'cluster_'
 
@@ -254,7 +255,7 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
     return labels
 
 
-def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
+def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[pd.DataFrame]:
     """
     Computes the voxel information for each cluster
 
@@ -360,16 +361,12 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
             for struct_key in structure_id_list_occurrences.keys():
                 total_num_structure_ids += structure_id_list_occurrences[struct_key]
 
-            percentages = []
-
             print(f'\nCluster {key} structure id percentages: ')
             for struct_key in sorted(structure_id_list_occurrences.keys()):
                 percent = float(structure_id_list_occurrences[struct_key] / total_num_structure_ids * 100)
                 print(f"Structure {struct_key}: {percent}%")
 
                 structure_ids[int(struct_key)][key] = structure_id_list_occurrences[struct_key]
-
-                # initialize structure_ids dictionary
 
         print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
                 
@@ -389,6 +386,12 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[dict]:
             new_df.to_csv(f"{name_of_file}.csv", index=False)
 
             print(f"File saved as {name_of_file}.csv")
+
+        # show the distributions of the structure ids for each cluster
+
+        show_distributions(new_df)
+
+        voxel_info.append(new_df)
 
     return voxel_info
 
