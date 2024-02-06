@@ -58,7 +58,7 @@ def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
 def brain_kmeans_cbk() -> pd.DataFrame:
     """
     Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
-    :return: Cluster labels
+    :return: The dataframe generated with the cluster ids, XYZ, and the genes
     """
 
     name = input("What is your name? ")
@@ -344,8 +344,6 @@ def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
         for j in used_structure_ids:
             structure_ids[int(j)] = [0] * cluster_num
 
-        print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
-
         for key in voxels.keys():
             voxel_list = voxels[key]
 
@@ -368,10 +366,10 @@ def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
             for struct_key in structure_id_list_occurrences.keys():
                 total_num_structure_ids += structure_id_list_occurrences[struct_key]
 
-            print(f'\nCluster {key} structure id percentages: ')
+            #print(f'\nCluster {key} structure id percentages: ')
             for struct_key in sorted(structure_id_list_occurrences.keys()):
                 percent = float(structure_id_list_occurrences[struct_key] / total_num_structure_ids * 100)
-                print(f"Structure {struct_key}: {percent}%")
+                #print(f"Structure {struct_key}: {percent}%")
 
                 structure_ids[int(struct_key)][key] = structure_id_list_occurrences[struct_key]
                 
