@@ -9,7 +9,6 @@ from sklearn.metrics import silhouette_score
 from sklearn.cluster import KMeans
 
 # Local packages
-from lib.string_parse import string_to_int_list
 
 # Choosing a matplotlib backend to ensure plot pop-up will deploy
 import matplotlib
@@ -17,9 +16,24 @@ from matplotlib import cm, colormaps
 
 matplotlib.use('TkAgg')
 
-from lib.visualizer import show_distributions, show_scatter
-
 cluster_label_prefix = 'cluster_'
+
+
+def string_to_int_list(string_as_list: str) -> List[int]:
+    """
+    Converts a string of format "[a1,b1,c1,d1,e1]" to a list of lists
+    :param string_as_list: A string of format "[1,2,3]"
+    :return: A list of integers
+    """
+
+    # Remove brackets at the end of they exist
+
+    string_as_list = string_as_list.replace("[", "").replace("]", "").replace(" ", "")
+
+    split_string = string_as_list.split(",")
+
+    return list(map(int, split_string))
+
 
 
 def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
@@ -260,7 +274,7 @@ def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
     """
     Computes the voxel information for each cluster
 
-    :param cluster_data_csv_path: The path to the cluster data
+    :param df: The dataframe to perform quantitative analysis on
     :return: The voxel information for each cluster
     """
 
