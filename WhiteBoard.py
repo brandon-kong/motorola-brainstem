@@ -13,9 +13,9 @@ from lib.string_parse import string_to_int_list
 
 # Choosing a matplotlib backend to ensure plot pop-up will deploy
 import matplotlib
-from matplotlib import cm
+from matplotlib import cm, colormaps
 
-# matplotlib.use('TkAgg')
+matplotlib.use('TkAgg')
 
 from lib.visualizer import show_distributions, show_scatter
 
@@ -41,7 +41,7 @@ def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
 ###################################################################################################################
 
 
-def brain_kmeans_cbk() -> List[List[int]]:
+def brain_kmeans_cbk() -> pd.DataFrame:
     """
     Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
     :return: Cluster labels
@@ -152,7 +152,7 @@ def brain_kmeans_cbk() -> List[List[int]]:
     print(f"Have a nice day, {name}!")
 
     # Returning the list of cluster results
-    return cluster_results
+    return df
 
 
 def plot_knee_plot(max_clusters: int, inertias: List[float]):
@@ -223,7 +223,7 @@ def visualize_clusters(df: pd.DataFrame):
 
         ax.set_title(f'Cluster label for {label}')
 
-        cmap = cm.get_cmap('rainbow', max(data) + 1)
+        cmap = colormaps.get_cmap('rainbow')
 
         scatter = ax.scatter(x, y, z, c=data, cmap=cmap, alpha=0.6)
 
@@ -256,7 +256,7 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
     return labels
 
 
-def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[pd.DataFrame]:
+def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
     """
     Computes the voxel information for each cluster
 
@@ -264,7 +264,7 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[pd.DataFrame]
     :return: The voxel information for each cluster
     """
 
-    df = pd.read_csv(cluster_data_csv_path, header=0, float_precision='high')
+    #df = pd.read_csv(cluster_data_csv_path, header=0, float_precision='high')
 
     new_den_c_path = input('Enter the path of the NewDenC.csv file: ') or 'data_files/NewDenC.csv'
 
@@ -360,8 +360,6 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[pd.DataFrame]
                 print(f"Structure {struct_key}: {percent}%")
 
                 structure_ids[int(struct_key)][key] = structure_id_list_occurrences[struct_key]
-
-        print(f"\nStructure IDs for cluster {cluster_num}: ", structure_ids)
                 
         for j in used_structure_ids:
             new_df[f'structure {int(j)}'] = structure_ids[int(j)]
@@ -452,5 +450,10 @@ def brain_kmeans():
     plt.show()
 
 
+def main():
+    df = brain_kmeans_cbk()
+    compute_cluster_voxel_info(df)
+
+
 if __name__ == '__main__':
-    compute_cluster_voxel_info('woohoo.csv')
+    main()
