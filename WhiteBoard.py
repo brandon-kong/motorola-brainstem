@@ -108,7 +108,6 @@ def brain_kmeans_cbk() -> List[List[int]]:
         cluster_results.append(cluster_labels)
 
         # Visualizations would go here
-        # visualize_clusters(filepath)
         occurrences = {}
 
         for label in cluster_labels:
@@ -137,6 +136,9 @@ def brain_kmeans_cbk() -> List[List[int]]:
     df = pd.DataFrame(new_df)
 
     print(df.head())
+
+    # Visualize the clusters
+    visualize_clusters(df)
 
     wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
 
@@ -202,8 +204,7 @@ def do_kmeans_clustering(data: pd.DataFrame, n_clusters: int) -> List[int]:
     return cluster_labels
 
 
-def visualize_clusters(df_to_visualize: str):
-    df = pd.read_csv(df_to_visualize, header=0, float_precision='high')
+def visualize_clusters(df: pd.DataFrame):
 
     x = df['X']
     y = df['Y']
@@ -301,14 +302,6 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[pd.DataFrame]
                 voxels[label] = [j]
                 occurrences[label] = 1
 
-        # get a list of voxels for each cluster
-
-        print(f"Cluster Occurrences for {cluster_num} clusters: {occurrences}")
-
-        print("Percentages of occurrences: ")
-
-        # Sort the keys in the dictionary
-
         percentages = []
         voxel_counts = []
 
@@ -389,7 +382,10 @@ def compute_cluster_voxel_info(cluster_data_csv_path: str) -> List[pd.DataFrame]
 
         # show the distributions of the structure ids for each cluster
 
-        show_distributions(new_df)
+        # for each cluster, get the pie chart of the structure ids
+
+
+
 
         voxel_info.append(new_df)
 
@@ -457,4 +453,4 @@ def brain_kmeans():
 
 
 if __name__ == '__main__':
-    compute_cluster_voxel_info('data_files/generated/chat252_clustered_xyz.csv')
+    compute_cluster_voxel_info('woohoo.csv')

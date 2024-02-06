@@ -36,4 +36,16 @@ def show_scatter(df: str, title: str, x_label: str, y_label: str):
     plt.ylabel(y_label)
     plt.show()
 
+def show_pie(df: pd.DataFrame):
+    # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+    labels = 'A', 'B', 'C', 'D'
+    sizes = [15, 30, 45, 10]
+    explode = (0, 0.1, 0, 0)  # only "explode" the 2nd slice (i.e. 'B')
+
+    fig1, ax1 = plt.subplots()
+    ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+            shadow=True, startangle=90)
+    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+    plt.show()
 
