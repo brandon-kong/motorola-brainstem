@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import silhouette_score
 from sklearn.cluster import KMeans
 
+from lib.visualizer import show_stacked_bar_graph
+
 # Local packages
 
 # Choosing a matplotlib backend to ensure plot pop-up will deploy

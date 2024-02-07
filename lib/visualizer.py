@@ -3,7 +3,7 @@
 
 from matplotlib import pyplot as plt
 import pandas as pd
-
+import numpy as np
 
 def show_distributions(df: pd.DataFrame):
     # Plot the 13 structure ids
@@ -49,3 +49,33 @@ def show_pie(df: pd.DataFrame):
 
     plt.show()
 
+
+def show_stacked_bar_graph(quantitative_data_path: str):
+
+    df = pd.read_csv(quantitative_data_path, float_precision='high')
+    df = pd.DataFrame(df)
+
+    clusters = df['cluster']
+
+    structures = df.columns[df.columns.str.startswith('structure')]
+
+    data = []
+
+    for i in structures:
+        data.append(df[i])
+
+    data = np.array(data)
+
+    fig, ax = plt.subplots()
+    bottom = np.zeros(len(clusters))
+    
+    for i in range(len(structures)):
+        ax.bar(clusters, data[i], label=structures[i])
+
+    ax.set_ylabel('Number of Voxels')
+    ax.set_title('Number of Voxels per Cluster')
+    ax.legend(title='Structure ID')
+
+    plt.tight_layout()
+    plt.show()
+    
