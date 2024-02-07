@@ -63,6 +63,7 @@ def brain_kmeans_cbk() -> pd.DataFrame:
     :return: The dataframe generated with the cluster ids, XYZ, and the genes
     """
 
+    # User greeting
     name = input("What is your name? ")
     print(f"\nHey {name}! This is brain_kmeans_cbk(). Doing some cool stuff now...")
 
@@ -280,7 +281,12 @@ def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
     :return: The voxel information for each cluster
     """
 
-    #df = pd.read_csv(cluster_data_csv_path, header=0, float_precision='high')
+    print("This is the compute_cluster_voxel_info function! Doing some cool stuff now...")
+
+    cluster_data_csv_path = input('Enter the path of the cluster data CSV file: ')
+
+    if cluster_data_csv_path:
+        df = pd.read_csv(cluster_data_csv_path, header=0, float_precision='high')
 
     new_den_c_path = input('Enter the path of the NewDenC.csv file: ') or 'data_files/NewDenC.csv'
 
@@ -381,7 +387,7 @@ def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
 
         new_df = pd.DataFrame(new_df)
 
-        print(new_df.head(n=cluster_num))
+        print(new_df.head(n=min(13, cluster_num)))
 
         wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
 
@@ -400,6 +406,8 @@ def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
 
 
         voxel_info.append(new_df)
+
+    print('Thanks for using the compute_cluster_voxel_info function! Have a nice day!')
 
     return voxel_info
 
