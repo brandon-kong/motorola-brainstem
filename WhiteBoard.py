@@ -402,9 +402,6 @@ def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
 
         # for each cluster, get the pie chart of the structure ids
 
-
-
-
         voxel_info.append(new_df)
 
     print('Thanks for using the compute_cluster_voxel_info function! Have a nice day!')
