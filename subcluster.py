@@ -15,11 +15,11 @@ def subcluster_from_file():
 
     int_which_cluster_id = -1
 
-    while int_which_cluster_id < 0 or int_which_cluster_id > int_cluster_label:
-        which_cluster_id = input(f"From the {int_cluster_label} cluster{'' if int_cluster_label == 1 else 's'}, which one do you want to subcluster? ")
+    while int_which_cluster_id < 0 or int_which_cluster_id >= int_cluster_label:
+        which_cluster_id = input(f"From the {int_cluster_label} cluster{'' if int_cluster_label == 1 else 's'}, which one do you want to subcluster (0-{int_cluster_label - 1})? ")
         int_which_cluster_id = int(which_cluster_id)
 
-        if (not int_which_cluster_id) or int_which_cluster_id < 0 or int_which_cluster_id > int_cluster_label:
+        if (not int_which_cluster_id) or int_which_cluster_id < 0 or int_which_cluster_id >= int_cluster_label:
             print("Invalid cluster id")
             continue
 
