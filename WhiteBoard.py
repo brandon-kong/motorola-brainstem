@@ -275,10 +275,13 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
 
 def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
     """
-    Computes the voxel information for each cluster
+    Computes cluster compositions for each cluster including
+    - Number of voxels in each cluster
+    - Number of voxels as a percentage of the total number of voxels in the cluster
+    - Structure IDs and how many voxels are in all 13 structure IDs for each cluster
 
     :param df: The dataframe to perform quantitative analysis on
-    :return: The voxel information for each cluster
+    :return: A list of dataframes containing the voxel information for each number of clusters
     """
 
     print("This is the compute_cluster_voxel_info function! Doing some cool stuff now...")
