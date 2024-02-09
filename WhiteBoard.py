@@ -74,6 +74,8 @@ def brain_kmeans_cbk() -> pd.DataFrame:
     df = pd.read_csv(filepath, header=0, float_precision='high')
     new_df = {}
 
+    new_df['voxel_number'] = [i+1 for i in range(len(df))]
+
     # Printing head table to ensure proper loading of data
     print(f"\nHEAD TABLE OF LOADED DATA FRAME: {filepath}")
     print(df.head())
@@ -404,9 +406,6 @@ def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
         # show the distributions of the structure ids for each cluster
 
         # for each cluster, get the pie chart of the structure ids
-
-
-
 
         voxel_info.append(new_df)
 
