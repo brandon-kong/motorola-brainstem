@@ -57,7 +57,7 @@ def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
 ###################################################################################################################
 
 
-def brain_kmeans_cbk() -> pd.DataFrame:
+def brain_kmeans_cbk(df: pd.DataFrame | None = None, voxel_numbers: pd.Series | None = None) -> pd.DataFrame:
     """
     Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
     :return: The dataframe generated with the cluster ids, XYZ, and the genes
@@ -68,16 +68,21 @@ def brain_kmeans_cbk() -> pd.DataFrame:
     print(f"\nHey {name}! This is brain_kmeans_cbk(). Doing some cool stuff now...")
 
     # Asking for filepath to be analyzed
-    filepath = input("\nEnter file to be k-mean'ed: ")
+
+    new_df = {}
+
+    if df is None:
+        filepath = input("\nEnter file to be k-mean'ed: ")
 
     # Loading CSV file with pandas package
-    df = pd.read_csv(filepath, header=0, float_precision='high')
-    new_df = {}
+        df = pd.read_csv(filepath, header=0, float_precision='high')
+    else:
+        print("Dataframe provided, skipping file load.")
 
     new_df['voxel_number'] = [i+1 for i in range(len(df))]
 
     # Printing head table to ensure proper loading of data
-    print(f"\nHEAD TABLE OF LOADED DATA FRAME: {filepath}")
+    print(f"\nHead table of the loaded dataframe:")
     print(df.head())
 
     # Asking for a max number of clusters
@@ -142,9 +147,17 @@ def brain_kmeans_cbk() -> pd.DataFrame:
 
     # Add all the gene data to the df_data
 
+    # if voxel_numbers is defined, we should only add rows that are in the voxel_numbers list
+    if voxel_numbers is not None:
+        new_df['voxel_number'] = voxel_numbers
+
     for (columnName, columnData) in xyz_dfs.items():
         if (columnName in df) or columnName in ['X', 'Y', 'Z']:
-            new_df[columnName] = columnData
+            # filter column data to only include the rows that are in the voxel_numbers list
+            if voxel_numbers is not None:
+                new_df[columnName] = [columnData[i] for i in range(len(columnData)) if i in voxel_numbers]
+            else:
+                new_df[columnName] = columnData
 
     # Add the focused genes to the df_data as well
 
