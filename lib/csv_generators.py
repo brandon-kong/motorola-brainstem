@@ -38,4 +38,4 @@ def get_gas_gene_data ():
 
     
 if __name__ == "__main__":
-    get_chat252_gene_data()
+    get_gas_gene_data()

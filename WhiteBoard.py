@@ -143,7 +143,7 @@ def brain_kmeans_cbk(df: pd.DataFrame | None = None, voxel_numbers: pd.Series | 
         print(f"\nCluster Occurrences for {cluster_set[i]} clusters: {occurrences}")
 
     # Load the XYZ data from the mutated dataset
-    xyz_dfs = pd.read_csv('data_files/output_K1_mutate.csv', header=0, float_precision='high')
+    xyz_dfs = pd.read_csv('data_files/NewDenC.csv', header=0, float_precision='high')
 
     # Add all the gene data to the df_data
 

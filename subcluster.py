@@ -14,6 +14,12 @@ def generate_cluster_id_subcluster_dataframe_from_file() -> pd.DataFrame:
 
     cluster_label = cluster_label_prefix + cluster_label
 
+    while cluster_label not in df.columns:
+        print(f"Cluster {cluster_label} not found")
+        cluster_label = input("Enter the number of the cluster you want to subcluster: ")
+        int_cluster_label = int(cluster_label)
+        cluster_label = cluster_label_prefix + cluster_label
+
     subcluster = df.get(cluster_label)
 
     int_which_cluster_id = -1
@@ -58,9 +64,6 @@ def brain_ception():
 
     # temporarily take out voxel_number to ensure clustering works on only gene expression data
     voxel_number = data_frame.get("voxel_number")
-
-    for i in voxel_number:
-        print(i)
 
     data_frame = data_frame.drop("voxel_number", axis=1)
 
