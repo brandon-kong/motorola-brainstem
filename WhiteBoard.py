@@ -236,6 +236,45 @@ def do_kmeans_clustering(data: pd.DataFrame, n_clusters: int) -> List[int]:
     return cluster_labels
 
 
+
+def append_xyz_data_to_df(df: pd.DataFrame, voxel_numbers: pd.Series | None = None) -> pd.DataFrame:
+    """
+    Appends the XYZ data from the mutated dataset to the given dataframe
+
+    :param df: The dataframe to append the XYZ data to
+    :param xyz_dfs: The dataframe containing the XYZ data
+    :param voxel_numbers: The list of voxel numbers to append to the dataframe
+    :return: The dataframe with the appended XYZ data
+    """
+
+    new_df = {}
+
+    # Load the XYZ data from the mutated dataset
+    xyz_dfs = pd.read_csv('data_files/NewDenC.csv', header=0, float_precision='high')
+
+    # if voxel_numbers is defined, we should only add rows that are in the voxel_numbers list
+    if voxel_numbers is not None:
+        new_df['voxel_number'] = voxel_numbers
+
+    for (columnName, columnData) in xyz_dfs.items():
+        if (columnName in df) or columnName in ['X', 'Y', 'Z']:
+            # filter column data to only include the rows that are in the voxel_numbers list
+            if voxel_numbers is not None:
+                new_df[columnName] = [columnData[i] for i in range(len(columnData)) if i in voxel_numbers]
+            else:
+                new_df[columnName] = columnData
+
+    # Add all the gene data to the df_data
+
+    for (columnName, columnData) in df.items():
+        if columnName in df:
+            new_df[columnName] = columnData
+
+    df = pd.DataFrame(new_df)
+
+    return df
+
+
 def visualize_clusters(df: pd.DataFrame):
 
     x = df['X']
@@ -270,6 +309,34 @@ def visualize_clusters(df: pd.DataFrame):
         plt.show()
 
     # Customize the plot
+
+
+def plot_xyz_scatter(df: pd.DataFrame):
+    """
+    Plots the XYZ scatter plot for the given dataframe
+
+    :param df: The dataframe to plot the XYZ scatter plot for
+    :return:
+    """
+
+    x = df['X']
+    y = df['Y']
+    z = df['Z']
+
+    # Create a 3D scatter plot
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Scatter plot with colored points based on cluster_id
+    scatter = ax.scatter(x, y, z)
+
+    # Customize the plot
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+
+    # Show the plot
+    plt.show()
 
 
 def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:

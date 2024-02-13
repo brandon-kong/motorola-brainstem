@@ -1,6 +1,6 @@
 import pandas as pd
 
-from WhiteBoard import cluster_label_prefix, do_kmeans_clustering, brain_kmeans_cbk
+from WhiteBoard import cluster_label_prefix, brain_kmeans_cbk, append_xyz_data_to_df, plot_xyz_scatter
 
 from lib.string_parse import string_to_int_list
 
@@ -29,7 +29,7 @@ def generate_cluster_id_subcluster_dataframe_from_file() -> pd.DataFrame:
                                  f"cluster ID do you want to subcluster (0-{int_cluster_label - 1})? ")
         int_which_cluster_id = int(which_cluster_id)
 
-        if (not int_which_cluster_id) or int_which_cluster_id < 0 or int_which_cluster_id >= int_cluster_label:
+        if (int_which_cluster_id is None) or int_which_cluster_id < 0 or int_which_cluster_id >= int_cluster_label:
             print("Invalid cluster id")
             continue
 
@@ -67,9 +67,14 @@ def brain_ception():
 
     data_frame = data_frame.drop("voxel_number", axis=1)
 
+    xyz_data = append_xyz_data_to_df(data_frame, voxel_number)
+
+    print(xyz_data.head())
+    plot_xyz_scatter(xyz_data)
+
     # cluster the data
 
-    cluster_labels = brain_kmeans_cbk(data_frame, voxel_number)
+    #cluster_labels = brain_kmeans_cbk(data_frame, voxel_number)
 
     # put the voxel_number back in
 
