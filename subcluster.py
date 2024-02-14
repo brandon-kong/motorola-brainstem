@@ -5,6 +5,12 @@ from WhiteBoard import cluster_label_prefix, brain_kmeans_cbk, append_xyz_data_t
 from lib.string_parse import string_to_int_list
 
 def generate_cluster_id_subcluster_dataframe_from_file() -> tuple[pd.DataFrame, int, str]: 
+    """
+    Generates a dataframe from a file containing the clustered results
+    which can then be used to subcluster a cluster from the dataset
+
+    :return: A tuple containing the dataframe, the cluster id, and the cluster label
+    """
     file_path = input("Enter the path to the dataset with clustered results: ") or ("data_files/generated"
                                                                                     "/voxels_cluster_ids.csv")
     df = pd.read_csv(file_path, header=0, float_precision='high')
@@ -58,6 +64,12 @@ def generate_cluster_id_subcluster_dataframe_from_file() -> tuple[pd.DataFrame, 
 
 
 def brain_ception():
+    """
+    Subclusters a cluster from a dataset containing clustered results
+
+    :return: None
+    """
+
     print("We need to go deeper.")
 
     data_frame, cluster_id, cluster_num = generate_cluster_id_subcluster_dataframe_from_file()
