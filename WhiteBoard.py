@@ -2,7 +2,7 @@
 # ML_Brainstem 2024
 
 # Loading global packages
-from typing import List
+from typing import List, Optional
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import silhouette_score
@@ -57,7 +57,13 @@ def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
 ###################################################################################################################
 
 
-def brain_kmeans_cbk() -> pd.DataFrame:
+def brain_kmeans_cbk(
+        df: Optional[pd.DataFrame] = None, 
+        voxel_numbers: Optional[pd.Series] = None, 
+        is_subcluster: Optional[bool] = False, 
+        cluster_id: Optional[int] = None,
+
+    ) -> pd.DataFrame:
     """
     Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
     :return: The dataframe generated with the cluster ids, XYZ, and the genes
@@ -68,16 +74,21 @@ def brain_kmeans_cbk() -> pd.DataFrame:
     print(f"\nHey {name}! This is brain_kmeans_cbk(). Doing some cool stuff now...")
 
     # Asking for filepath to be analyzed
-    filepath = input("\nEnter file to be k-mean'ed: ")
+
+    new_df = {}
+
+    if df is None:
+        filepath = input("\nEnter file to be k-mean'ed: ")
 
     # Loading CSV file with pandas package
-    df = pd.read_csv(filepath, header=0, float_precision='high')
-    new_df = {}
+        df = pd.read_csv(filepath, header=0, float_precision='high')
+    else:
+        print("Dataframe provided, skipping file load.")
 
     new_df['voxel_number'] = [i+1 for i in range(len(df))]
 
     # Printing head table to ensure proper loading of data
-    print(f"\nHEAD TABLE OF LOADED DATA FRAME: {filepath}")
+    print(f"\nHead table of the loaded dataframe:")
     print(df.head())
 
     # Asking for a max number of clusters
@@ -135,16 +146,24 @@ def brain_kmeans_cbk() -> pd.DataFrame:
             else:
                 occurrences[label] = 1
 
-        print(f"\nCluster Occurrences for {cluster_set[i]} clusters: {occurrences}")
+        # print(f"\nCluster Occurrences for {cluster_set[i]} clusters: {occurrences}")
 
     # Load the XYZ data from the mutated dataset
-    xyz_dfs = pd.read_csv('data_files/output_K1_mutate.csv', header=0, float_precision='high')
+    xyz_dfs = pd.read_csv('data_files/NewDenC.csv', header=0, float_precision='high')
 
     # Add all the gene data to the df_data
 
+    # if voxel_numbers is defined, we should only add rows that are in the voxel_numbers list
+    if voxel_numbers is not None:
+        new_df['voxel_number'] = voxel_numbers
+
     for (columnName, columnData) in xyz_dfs.items():
         if (columnName in df) or columnName in ['X', 'Y', 'Z']:
-            new_df[columnName] = columnData
+            # filter column data to only include the rows that are in the voxel_numbers list
+            if voxel_numbers is not None:
+                new_df[columnName] = [columnData[i] for i in range(len(columnData)) if i in voxel_numbers]
+            else:
+                new_df[columnName] = columnData
 
     # Add the focused genes to the df_data as well
 
@@ -157,7 +176,12 @@ def brain_kmeans_cbk() -> pd.DataFrame:
     print(df.head())
 
     # Visualize the clusters
-    visualize_clusters(df)
+    title = "Cluster label for label"
+
+    if is_subcluster:
+        title = f"Subcluster on cluster {cluster_id} for label"
+
+    visualize_clusters(df, title=title)
 
     wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
 
@@ -171,7 +195,7 @@ def brain_kmeans_cbk() -> pd.DataFrame:
     print(f"Have a nice day, {name}!")
 
     # Returning the list of cluster results
-    return df
+    return df, name
 
 
 def plot_knee_plot(max_clusters: int, inertias: List[float]):
@@ -223,7 +247,46 @@ def do_kmeans_clustering(data: pd.DataFrame, n_clusters: int) -> List[int]:
     return cluster_labels
 
 
-def visualize_clusters(df: pd.DataFrame):
+
+def append_xyz_data_to_df(df: pd.DataFrame, voxel_numbers: pd.Series | None = None) -> pd.DataFrame:
+    """
+    Appends the XYZ data from the mutated dataset to the given dataframe
+
+    :param df: The dataframe to append the XYZ data to
+    :param xyz_dfs: The dataframe containing the XYZ data
+    :param voxel_numbers: The list of voxel numbers to append to the dataframe
+    :return: The dataframe with the appended XYZ data
+    """
+
+    new_df = {}
+
+    # Load the XYZ data from the mutated dataset
+    xyz_dfs = pd.read_csv('data_files/NewDenC.csv', header=0, float_precision='high')
+
+    # if voxel_numbers is defined, we should only add rows that are in the voxel_numbers list
+    if voxel_numbers is not None:
+        new_df['voxel_number'] = voxel_numbers
+
+    for (columnName, columnData) in xyz_dfs.items():
+        if (columnName in df) or columnName in ['X', 'Y', 'Z']:
+            # filter column data to only include the rows that are in the voxel_numbers list
+            if voxel_numbers is not None:
+                new_df[columnName] = [columnData[i] for i in range(len(columnData)) if i in voxel_numbers]
+            else:
+                new_df[columnName] = columnData
+
+    # Add all the gene data to the df_data
+
+    for (columnName, columnData) in df.items():
+        if columnName in df:
+            new_df[columnName] = columnData
+
+    df = pd.DataFrame(new_df)
+
+    return df
+
+
+def visualize_clusters(df: pd.DataFrame, title: str = "Cluster label for label"):
 
     x = df['X']
     y = df['Y']
@@ -240,7 +303,7 @@ def visualize_clusters(df: pd.DataFrame):
         label = cluster_labels[i].get('label')
         data = cluster_labels[i].get('data')
 
-        ax.set_title(f'Cluster label for {label}')
+        ax.set_title(title + f" {label}")
 
         cmap = colormaps.get_cmap('rainbow')
 
@@ -259,6 +322,38 @@ def visualize_clusters(df: pd.DataFrame):
     # Customize the plot
 
 
+def plot_xyz_scatter(df: pd.DataFrame, title: str = "XYZ Scatter Plot"):
+    """
+    Plots the XYZ scatter plot for the given dataframe
+
+    :param df: The dataframe to plot the XYZ scatter plot for
+    :return:
+    """
+
+    x = df['X']
+    y = df['Y']
+    z = df['Z']
+
+    # Create a 3D scatter plot
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+
+
+    # Scatter plot with colored points based on cluster_id
+    scatter = ax.scatter(x, y, z)
+
+    # Customize the plot
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+
+    ax.set_title(title)
+
+    # Show the plot
+    plt.show()
+
+
 def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
     labels = []
 
@@ -275,7 +370,7 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
     return labels
 
 
-def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
+def compute_cluster_voxel_info(df: pd.DataFrame, name:str="") -> List[pd.DataFrame]:
     """
     Computes cluster compositions for each cluster including
     - Number of voxels in each cluster
@@ -475,8 +570,8 @@ def brain_kmeans():
 
 
 def main():
-    df = brain_kmeans_cbk()
-    compute_cluster_voxel_info(df)
+    df, name = brain_kmeans_cbk()
+    compute_cluster_voxel_info(df, name=name)
 
 
 if __name__ == '__main__':
