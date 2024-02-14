@@ -1,3 +1,11 @@
+# Novel Brainstem Nuclei Localization
+
+## Project Overview
+
+The goal of this project is to identify and localize novel brainstem nuclei using a combination of gene expression data and spatial information. The data is derived from the Allen Mouse Brain Atlas (AMBA), which provides a comprehensive map of gene expression in the mouse brain. The data is organized into a 3D grid of voxels, each of which contains the expression levels of a set of genes. The goal is to use this data to identify clusters of voxels that correspond to distinct brainstem nuclei, and to identify the genes that are most strongly associated with each cluster.
+
+## To-Do List
+
 - [ ] Prepare DEN 193-gene “complete” data frame [0.01] and perform a similar clustering analysis
 
 - [ ] Create an INT “sister” data frame, based on the 644-gene “complete” data frame [0.001]
@@ -14,6 +22,6 @@
 
 - [ ] Plot/identify initial centroids of each cluster for later comparison
 
-- [ ] Implement sub-clustering routine into brain_k-means_cbk() to cluster within specified cluster(s) and pinpoint Structure-IDs within each
+- [x] Implement sub-clustering routine into brain_k-means_cbk() to cluster within specified cluster(s) and pinpoint Structure-IDs within each
 
 - [ ] Update on Project Overview for quarterly progress report and later reference (edited) 
