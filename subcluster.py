@@ -2,7 +2,13 @@ import pandas as pd
 
 from WhiteBoard import cluster_label_prefix
 
-def subcluster_from_file():
+def brain_ception() -> pd.DataFrame:
+    """
+    This function is used to subcluster a dataset that has already been clustered, 
+    and the user wants to subcluster a specific cluster from the dataset.
+
+    :return: The subclustered dataset
+    """
     file_path = input("Enter the path to the dataset with clustered results: ")
     df = pd.read_csv(file_path, header=0, float_precision='high')
 
