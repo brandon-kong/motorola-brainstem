@@ -85,7 +85,7 @@ def brain_kmeans_cbk(
     else:
         print("Dataframe provided, skipping file load.")
 
-    new_df['voxel_number'] = [i+1 for i in range(len(df))]
+    new_df['voxel_number'] = [i for i in range(len(df))]
 
     # Printing head table to ensure proper loading of data
     print(f"\nHead table of the loaded dataframe:")
