@@ -2,7 +2,7 @@
 # ML_Brainstem 2024
 
 # Loading global packages
-from typing import List
+from typing import List, Optional
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import silhouette_score
@@ -57,7 +57,13 @@ def generate_clustering_results(file_path: str, n_clusters: int) -> List[int]:
 ###################################################################################################################
 
 
-def brain_kmeans_cbk(df: pd.DataFrame | None = None, voxel_numbers: pd.Series | None = None) -> pd.DataFrame:
+def brain_kmeans_cbk(
+        df: Optional[pd.DataFrame] = None, 
+        voxel_numbers: Optional[pd.Series] = None, 
+        is_subcluster: Optional[bool] = False, 
+        cluster_id: Optional[int] = None,
+
+    ) -> pd.DataFrame:
     """
     Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
     :return: The dataframe generated with the cluster ids, XYZ, and the genes
@@ -140,7 +146,7 @@ def brain_kmeans_cbk(df: pd.DataFrame | None = None, voxel_numbers: pd.Series | 
             else:
                 occurrences[label] = 1
 
-        print(f"\nCluster Occurrences for {cluster_set[i]} clusters: {occurrences}")
+        # print(f"\nCluster Occurrences for {cluster_set[i]} clusters: {occurrences}")
 
     # Load the XYZ data from the mutated dataset
     xyz_dfs = pd.read_csv('data_files/NewDenC.csv', header=0, float_precision='high')
@@ -170,7 +176,12 @@ def brain_kmeans_cbk(df: pd.DataFrame | None = None, voxel_numbers: pd.Series | 
     print(df.head())
 
     # Visualize the clusters
-    visualize_clusters(df)
+    title = "Cluster label for label"
+
+    if is_subcluster:
+        title = f"Subcluster on cluster {cluster_id} for label"
+
+    visualize_clusters(df, title=title)
 
     wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
 
@@ -184,7 +195,7 @@ def brain_kmeans_cbk(df: pd.DataFrame | None = None, voxel_numbers: pd.Series | 
     print(f"Have a nice day, {name}!")
 
     # Returning the list of cluster results
-    return df
+    return df, name
 
 
 def plot_knee_plot(max_clusters: int, inertias: List[float]):
@@ -275,7 +286,7 @@ def append_xyz_data_to_df(df: pd.DataFrame, voxel_numbers: pd.Series | None = No
     return df
 
 
-def visualize_clusters(df: pd.DataFrame):
+def visualize_clusters(df: pd.DataFrame, title: str = "Cluster label for label"):
 
     x = df['X']
     y = df['Y']
@@ -292,7 +303,7 @@ def visualize_clusters(df: pd.DataFrame):
         label = cluster_labels[i].get('label')
         data = cluster_labels[i].get('data')
 
-        ax.set_title(f'Cluster label for {label}')
+        ax.set_title(title + f" {label}")
 
         cmap = colormaps.get_cmap('rainbow')
 
@@ -311,7 +322,7 @@ def visualize_clusters(df: pd.DataFrame):
     # Customize the plot
 
 
-def plot_xyz_scatter(df: pd.DataFrame):
+def plot_xyz_scatter(df: pd.DataFrame, title: str = "XYZ Scatter Plot"):
     """
     Plots the XYZ scatter plot for the given dataframe
 
@@ -327,6 +338,8 @@ def plot_xyz_scatter(df: pd.DataFrame):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
+
+
     # Scatter plot with colored points based on cluster_id
     scatter = ax.scatter(x, y, z)
 
@@ -334,6 +347,8 @@ def plot_xyz_scatter(df: pd.DataFrame):
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
     ax.set_zlabel('Z Label')
+
+    ax.set_title(title)
 
     # Show the plot
     plt.show()
@@ -355,12 +370,15 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
     return labels
 
 
-def compute_cluster_voxel_info(df: pd.DataFrame) -> List[pd.DataFrame]:
+def compute_cluster_voxel_info(df: pd.DataFrame, name:str="") -> List[pd.DataFrame]:
     """
-    Computes the voxel information for each cluster
+    Computes cluster compositions for each cluster including
+    - Number of voxels in each cluster
+    - Number of voxels as a percentage of the total number of voxels in the cluster
+    - Structure IDs and how many voxels are in all 13 structure IDs for each cluster
 
     :param df: The dataframe to perform quantitative analysis on
-    :return: The voxel information for each cluster
+    :return: A list of dataframes containing the voxel information for each number of clusters
     """
 
     print("This is the compute_cluster_voxel_info function! Doing some cool stuff now...")
@@ -552,8 +570,8 @@ def brain_kmeans():
 
 
 def main():
-    df = brain_kmeans_cbk()
-    compute_cluster_voxel_info(df)
+    df, name = brain_kmeans_cbk()
+    compute_cluster_voxel_info(df, name=name)
 
 
 if __name__ == '__main__':

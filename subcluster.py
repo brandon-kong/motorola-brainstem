@@ -4,7 +4,13 @@ from WhiteBoard import cluster_label_prefix, brain_kmeans_cbk, append_xyz_data_t
 
 from lib.string_parse import string_to_int_list
 
-def generate_cluster_id_subcluster_dataframe_from_file() -> pd.DataFrame:
+def generate_cluster_id_subcluster_dataframe_from_file() -> tuple[pd.DataFrame, int, str]: 
+    """
+    Generates a dataframe from a file containing the clustered results
+    which can then be used to subcluster a cluster from the dataset
+
+    :return: A tuple containing the dataframe, the cluster id, and the cluster label
+    """
     file_path = input("Enter the path to the dataset with clustered results: ") or ("data_files/generated"
                                                                                     "/voxels_cluster_ids.csv")
     df = pd.read_csv(file_path, header=0, float_precision='high')
@@ -54,13 +60,19 @@ def generate_cluster_id_subcluster_dataframe_from_file() -> pd.DataFrame:
 
     print(subcluster.head())
 
-    return subcluster
+    return subcluster, int_which_cluster_id, cluster_label
 
 
 def brain_ception():
+    """
+    Subclusters a cluster from a dataset containing clustered results
+
+    :return: None
+    """
+
     print("We need to go deeper.")
 
-    data_frame = generate_cluster_id_subcluster_dataframe_from_file()
+    data_frame, cluster_id, cluster_num = generate_cluster_id_subcluster_dataframe_from_file()
 
     # temporarily take out voxel_number to ensure clustering works on only gene expression data
     voxel_number = data_frame.get("voxel_number")
@@ -70,14 +82,18 @@ def brain_ception():
     xyz_data = append_xyz_data_to_df(data_frame, voxel_number)
 
     print(xyz_data.head())
-    plot_xyz_scatter(xyz_data)
+    plot_xyz_scatter(xyz_data, f"Subclustering of {cluster_num}'s cluster {cluster_id}")
 
     # cluster the data
 
-    #cluster_labels = brain_kmeans_cbk(data_frame, voxel_number)
+    try:
+        cluster_labels = brain_kmeans_cbk(data_frame, voxel_number, is_subcluster=True, cluster_id=cluster_id)
+    except:
+        print("Clustering failed")
 
-    # put the voxel_number back in
 
 
 if __name__ == '__main__':
     brain_ception()
+
+# data_files/generated/chat252/chat252_clustered_xyz.csv
