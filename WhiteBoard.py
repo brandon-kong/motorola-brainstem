@@ -370,7 +370,7 @@ def get_cluster_labels_from_df(df: pd.DataFrame) -> List[dict]:
     return labels
 
 
-def compute_cluster_voxel_info(df: pd.DataFrame, name:str="") -> List[pd.DataFrame]:
+def compute_cluster_voxel_info(df: pd.DataFrame, name: str="") -> List[pd.DataFrame]:
     """
     Computes cluster compositions for each cluster including
     - Number of voxels in each cluster
