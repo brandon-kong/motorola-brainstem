@@ -85,7 +85,17 @@ def brain_kmeans_cbk(
     else:
         print("Dataframe provided, skipping file load.")
 
-    new_df['voxel_number'] = [i+1 for i in range(len(df))]
+    new_df['voxel_number'] = [i for i in range(len(df))]
+
+    removed_columns = {}
+
+    for (columnName, columnData) in df.items():
+        if columnName in ['X', 'Y', 'Z', 'Structure-ID', 'voxel_number', 'Unnamed: 0']:
+            new_df[columnName] = columnData
+            removed_columns[columnName] = columnData
+            df.drop(columnName, axis=1, inplace=True)
+
+    print(removed_columns)
 
     # Printing head table to ensure proper loading of data
     print(f"\nHead table of the loaded dataframe:")
@@ -114,12 +124,13 @@ def brain_kmeans_cbk(
         silhouette_scores.append(silhouette_avg)
 
     # Plotting silhouette plot
+        
     plot_silhouette_plot(max_clusters, silhouette_scores)
 
     # Displaying the plots
 
     plt.tight_layout()
-    plt.show(block=False)
+    #plt.show(block=False)
 
     # Asking user for the number of clusters they would like to set for clustering protocol
     cluster_set = string_to_int_list(
@@ -149,13 +160,21 @@ def brain_kmeans_cbk(
         # print(f"\nCluster Occurrences for {cluster_set[i]} clusters: {occurrences}")
 
     # Load the XYZ data from the mutated dataset
+                
+    # first, see if removed_columns has the XYZ data in it
+      
     xyz_dfs = pd.read_csv('data_files/NewDenC.csv', header=0, float_precision='high')
 
     # Add all the gene data to the df_data
 
     # if voxel_numbers is defined, we should only add rows that are in the voxel_numbers list
+
+
     if voxel_numbers is not None:
         new_df['voxel_number'] = voxel_numbers
+
+    if 'voxel_number' in removed_columns:
+        new_df['voxel_number'] = removed_columns['voxel_number']
 
     for (columnName, columnData) in xyz_dfs.items():
         if (columnName in df) or columnName in ['X', 'Y', 'Z']:
@@ -163,7 +182,11 @@ def brain_kmeans_cbk(
             if voxel_numbers is not None:
                 new_df[columnName] = [columnData[i] for i in range(len(columnData)) if i in voxel_numbers]
             else:
-                new_df[columnName] = columnData
+                # see if the column name is in the removed columns
+                if columnName in removed_columns:
+                    new_df[columnName] = removed_columns[columnName]
+                else:
+                    new_df[columnName] = columnData
 
     # Add the focused genes to the df_data as well
 
@@ -446,7 +469,8 @@ def compute_cluster_voxel_info(df: pd.DataFrame, name: str="") -> List[pd.DataFr
             voxel_list = voxels[key]
 
             for voxel in voxel_list:
-                structure_id = new_den_c.iloc[voxel]['Structure-ID']
+                structure_id = df.iloc[voxel].get('Structure-ID') or new_den_c.iloc[voxel]['Structure-ID']
+
                 used_structure_ids.add(structure_id)
 
         for j in used_structure_ids:
@@ -458,7 +482,7 @@ def compute_cluster_voxel_info(df: pd.DataFrame, name: str="") -> List[pd.DataFr
             structure_id_list = []
 
             for voxel in voxel_list:
-                structure_id = new_den_c.iloc[voxel]['Structure-ID']
+                structure_id = df.iloc[voxel].get('Structure-ID') or new_den_c.iloc[voxel]['Structure-ID']
                 structure_id_list.append(structure_id)
 
             structure_id_list_occurrences = {}
@@ -504,74 +528,14 @@ def compute_cluster_voxel_info(df: pd.DataFrame, name: str="") -> List[pd.DataFr
 
         voxel_info.append(new_df)
 
-    print('Thanks for using the compute_cluster_voxel_info function! Have a nice day!')
+    print(f'Thanks for using the compute_cluster_voxel_info function! Have a nice day, {name}!')
 
     return voxel_info
 
 
-def brain_kmeans():
-    """
-    STILL IN DEVELOPMENT
-    Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
-
-    :return: Cluster labels
-    """
-
-    # User greeting
-    print("\nHey Colin! This is the ongoing development of brain_kmeans(). \nBooting up protocol now...")
-
-    # Asking for filepath to be analyzed
-    filepath = input("\nEnter file to be k-mean'ed: ")
-
-    # Loading CSV file with pandas package
-    df = pd.read_csv(filepath, header=0, float_precision='high')
-
-    # Printing head table to ensure proper loading of data
-    print(f"\nHEAD TABLE OF LOADED DATA FRAME: {filepath}")
-    print(df.head())
-
-    # Asking what cluster parameter/ID to label
-    print("\nOf the 4 options: {4, 6, 8, 13}...")
-    cluster_choice = input("How many clusters would you like to visualize?: ")
-    if cluster_choice == '4':
-        cluster_id = df['cluster_4']
-    elif cluster_choice == '6':
-        cluster_id = df['cluster_6']
-    elif cluster_choice == '8':
-        cluster_id = df['cluster_8']
-    elif cluster_choice == '13':
-        cluster_id = df['cluster_13']
-    else:
-        print("Invalid cluster choice. Play nice :( ")
-        return
-
-    # Extracting x, y, z coordinates
-    x = df['X']
-    y = df['Y']
-    z = df['Z']
-
-    # Create a 3D scatter plot
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-
-    # Scatter plot with colored points based on cluster_id
-    scatter = ax.scatter(x, y, z, c=cluster_id, cmap='viridis')
-
-    # Customize the plot
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
-
-    # Add a colorbar
-    colorbar = fig.colorbar(scatter, ax=ax, label='Cluster ID')
-
-    # Show the plot
-    plt.show()
-
-
 def main():
-    df, name = brain_kmeans_cbk()
-    compute_cluster_voxel_info(df, name=name)
+    #df, name = brain_kmeans_cbk()
+    compute_cluster_voxel_info(df=None, name="Colin")
 
 
 if __name__ == '__main__':
