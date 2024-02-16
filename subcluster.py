@@ -2,8 +2,6 @@ import pandas as pd
 
 from WhiteBoard import cluster_label_prefix, brain_kmeans_cbk, append_xyz_data_to_df, plot_xyz_scatter
 
-from lib.string_parse import string_to_int_list
-
 def generate_cluster_id_subcluster_dataframe_from_file() -> tuple[pd.DataFrame, int, str]: 
     """
     Generates a dataframe from a file containing the clustered results
