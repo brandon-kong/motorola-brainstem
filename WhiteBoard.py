@@ -552,13 +552,6 @@ def compute_cluster_voxel_info(df: pd.DataFrame | None, name: str = "") -> List[
 
 
 def main():
-    """
-    data_frames = generate_dataframe_with_structure_id()
-    for key in data_frames:
-        print("Generating clusters for structure id: ", key)
-        brain_kmeans_cbk(data_frames[key])
-    """
-
     # df, name = brain_kmeans_cbk()
     compute_cluster_voxel_info(df=None, name="Colin")
 

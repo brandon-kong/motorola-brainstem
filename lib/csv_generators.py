@@ -85,6 +85,3 @@ def get_644_gene_dataframe() -> pd.DataFrame:
 
 if __name__ == "__main__":
     data_frames = generate_dataframe_with_structure_id()
-
-    for key in data_frames:
-        brain_kmeans_cbk(data_frames[key])
