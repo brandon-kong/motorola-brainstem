@@ -53,6 +53,12 @@ def brain_kmeans_cbk(
 ) -> pd.DataFrame:
     """
     Loads a CSV file based on a provided filepath and performs K-Means clustering based on the data frame contained
+
+    :param df: The dataframe to perform K-Means clustering on
+    :param voxel_numbers: The list of voxel numbers to append to the dataframe
+    :param is_subcluster: Whether the clustering is a subcluster
+    :param cluster_id: The cluster id to subcluster
+
     :return: The dataframe generated with the cluster ids, XYZ, and the genes
     """
 
@@ -72,7 +78,7 @@ def brain_kmeans_cbk(
     else:
         print("Dataframe provided, skipping file load.")
 
-    new_df['voxel_number'] = [i for i in range(len(df))]
+    new_df['voxel_number'] = [i+1 for i in range(len(df))]
 
     removed_columns = {}
 
@@ -423,7 +429,7 @@ def compute_cluster_voxel_info(df: pd.DataFrame | None, name: str = "") -> List[
     cluster_data_csv_path = input('Enter the path of the cluster data CSV file: ')
 
     if cluster_data_csv_path:
-        df = pd.read_csv(cluster_data_csv_path, header=0, float_precision='high')
+        df = pd.read_csv(cluster_data_csv_path, header=0, float_precision='high' )
 
     new_den_c_path = input('Enter the path of the NewDenC.csv file: ') or 'data_files/NewDenC.csv'
 
