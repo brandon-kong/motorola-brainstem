@@ -553,9 +553,9 @@ def compute_cluster_voxel_info(df: pd.DataFrame | None, name: str = "") -> List[
 
 def main():
     # df, name = brain_kmeans_cbk()
-    compute_cluster_voxel_info(df=None, name="Colin")
+    # compute_cluster_voxel_info(df=None, name="Colin")
 
-    # visualize_clusters(pd.read_csv("data_files/generated/voxels_cluster_ids[0.01].csv"), "Cluster label for label")
+    visualize_clusters(pd.read_csv("data_files/generated/voxels_cluster_ids.csv"), "Cluster label for label")
 
 
 if __name__ == '__main__':
