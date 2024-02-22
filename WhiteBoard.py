@@ -127,7 +127,7 @@ def brain_kmeans_cbk(
     # Displaying the plots
 
     plt.tight_layout()
-    # plt.show(block=False)
+    plt.show(block=False)
 
     # Asking user for the number of clusters they would like to set for clustering protocol
     cluster_set = input("\nEnter the number of clusters you would like to set for clustering protocol: ")
@@ -554,8 +554,7 @@ def compute_cluster_voxel_info(df: pd.DataFrame | None, name: str = "") -> List[
 def main():
     # df, name = brain_kmeans_cbk()
     # compute_cluster_voxel_info(df=None, name="Colin")
-
-    visualize_clusters(pd.read_csv("data_files/generated/voxels_cluster_ids.csv"), "Cluster label for label")
+    visualize_clusters(pd.read_csv("data_files/generated/structure_ids/clustered/structure_136_clustered.csv"), "Cluster label for label")
 
 
 if __name__ == '__main__':
