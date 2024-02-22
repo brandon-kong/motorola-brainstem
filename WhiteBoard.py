@@ -10,36 +10,15 @@ from sklearn.cluster import KMeans
 
 from pathlib import Path
 
-from lib.visualizer import show_stacked_bar_graph
-
-# Local packages
-
 # Choosing a matplotlib backend to ensure plot pop-up will deploy
 import matplotlib
 from matplotlib import colormaps
 
-from lib.csv_generators import generate_dataframe_with_structure_id
+from lib.string_parse import string_to_int_list
 
 matplotlib.use('TkAgg')
 
 cluster_label_prefix = 'cluster_'
-
-
-def string_to_int_list(string_as_list: str) -> List[int]:
-    """
-    Converts a string of format "[a1,b1,c1,d1,e1]" to a list of lists
-    :param string_as_list: A string of format "[1,2,3]"
-    :return: A list of integers
-    """
-
-    # Remove brackets at the end of they exist
-
-    string_as_list = string_as_list.replace("[", "").replace("]", "").replace(" ", "")
-
-    split_string = string_as_list.split(",")
-
-    return list(map(int, split_string))
-
 
 ###################################################################################################################
 
