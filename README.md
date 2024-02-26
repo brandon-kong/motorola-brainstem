@@ -50,7 +50,8 @@ Now that all the dependencies are installed, you can run the code!
 
 ## Data
 
-All data that I'm using will be in the `data_files` folder. I kindly ask that if you want to generate data from a function, that you set the file's location to be somewhere in `data_files/generated`, so it doesn't users
+All data that I'm using will be in the `data_files` folder. I kindly ask that if you want to generate data from a function, that you set the file's location to be somewhere in `data_files/generated`, so it doesn't confuse users.
+I'm working on documenting the data as well, so users know what the data means and what it represents in the context of our project.
 
 ## How to use?
 
