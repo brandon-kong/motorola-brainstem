@@ -12,3 +12,59 @@ In **WhiteBoard.py**, there are two main functions:
 
 
 
+## Getting Started
+
+Here's how you can get this environment up and running on your local machine:
+
+Clone the repository and step into it:
+
+```bash
+git clone https://github.com/brandon-kong/motorola-brainstem.git
+cd motorola-brainstem
+```
+
+Then, create a Python virtual environment:
+
+```bash
+python3 -m venv .venv
+```
+
+Activate the virtual environment:
+
+Windows
+```bash
+.venv/Scripts/activate
+```
+
+Unix
+```bash
+source .venv/bin/activate
+```
+
+Once activated, install all the dependencies to the environment
+```bash
+pip install -r requirements.txt
+```
+
+Now that all the dependencies are installed, you can run the code!
+
+## How to use?
+
+You can start with running `WhiteBoard.py` since it contains the K-Means clustering code. I put the code that I want to execute in the `main` function at the bottom of `WhiteBoard.py`. Feel free to change it and comment things out.
+You can try clustering on the datasets "output_K1.csv" with 4,6,8,13 clusters. You don't need to add any arguments to brain_kmeans_cbk(), it will all be input-based. 
+
+## Whiteboard.py
+
+There are 9 functions in WhiteBoard.py (not including the `main` function)
+
+- `brain_kmeans_cbk()`
+- `plot_knee_plot()`
+- `plot_silhouette_plot()`
+- `do_kmeans_clustering()`
+- `plot_knee_plot()`
+- `append_xyz_data_to_df()`
+- `visualize_clusters()`
+- `plot_xyz_scatter()`
+- `plot_knee_plot()`
+- `get_cluster_labels_from_df()`
+- `compute_cluster_voxel_info()`
