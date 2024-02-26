@@ -48,6 +48,10 @@ pip install -r requirements.txt
 
 Now that all the dependencies are installed, you can run the code!
 
+## Data
+
+All data that I'm using will be in the `data_files` folder. I kindly ask that if you want to generate data from a function, that you set the file's location to be somewhere in `data_files/generated`, so it doesn't users
+
 ## How to use?
 
 You can start with running `WhiteBoard.py` since it contains the K-Means clustering code. I put the code that I want to execute in the `main` function at the bottom of `WhiteBoard.py`. Feel free to change it and comment things out.
