@@ -591,9 +591,16 @@ def create_comparison_voxel_clusters_dataframe() -> pd.DataFrame:
     return new_df, cluster_to_compare
 
 
-def compare_voxel_cluster_labels(df: Optional[pd.DataFrame], numLabels: int) -> pd.DataFrame:
+def compare_voxel_cluster_labels(df: Optional[pd.DataFrame]=None, numLabels: Optional[int]=4) -> pd.DataFrame:
     
     df = df
+
+    newDenC = pd.read_csv('data_files/NewDenC.csv', header=0, float_precision='high')
+
+    # take only the structure ids from the newDenC dataframe
+
+    voxRowNum = newDenC['voxRowNum']
+    newDenC = newDenC['Structure-ID']
 
     if df is None:
         input_path = input('Enter the path of the CSV file containing clusters to compare: ')
@@ -640,7 +647,7 @@ def compare_voxel_cluster_labels(df: Optional[pd.DataFrame], numLabels: int) -> 
                 else:
                     different_clusters += 1
                     cluster_voxels[val1].append(voxel_numbers[k])
-                    cluster_voxels[val2].append(voxel_numbers[k])
+                    # cluster_voxels[val2].append(voxel_numbers[k])
                     voxels_that_changed.append(voxel_numbers[k])
 
     print(f'Number of clusters that are the same: {same_clusters}')
@@ -656,7 +663,25 @@ def compare_voxel_cluster_labels(df: Optional[pd.DataFrame], numLabels: int) -> 
 
     filtered_df = original_df[original_df['voxel_number'].isin(voxels_that_changed)]
 
-    print('Here\'s the filtered dataframe containing only changed voxels: ')
+    # add the Structure-IDs from the NewDenC.csv file to the dataframe only if the row is in the voxels_that_changed list
+    
+    structure_id = []
+    voxRowNums = []
+
+    for i in range(len(newDenC)):
+        if i + 1 in voxels_that_changed:
+            voxRowNums.append(voxRowNum.loc[i])
+            structure_id.append(newDenC.loc[i])
+
+    filtered_df['Structure-ID'] = structure_id
+    filtered_df['voxRowNum'] = voxRowNum
+
+    # count the number of structure-ids that changed
+
+    print('Structure-IDs that changed:')
+    structure_id_counts = filtered_df['Structure-ID'].value_counts()
+
+    print(structure_id_counts)
 
     print(filtered_df.head())
 
@@ -675,8 +700,8 @@ def compare_voxel_cluster_labels(df: Optional[pd.DataFrame], numLabels: int) -> 
 
 
 def main():
-    df, cluster_to_compare = create_comparison_voxel_clusters_dataframe()
-    compare_voxel_cluster_labels(df, cluster_to_compare)
+    # df, cluster_to_compare = create_comparison_voxel_clusters_dataframe()
+    compare_voxel_cluster_labels(numLabels=13)
 
     # df, name = brain_kmeans_cbk()
     # compute_cluster_voxel_info(df=None, name="Colin")
