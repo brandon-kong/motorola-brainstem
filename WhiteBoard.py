@@ -15,6 +15,7 @@ import matplotlib
 from matplotlib import colormaps
 
 from lib.string_parse import string_to_int_list
+from lib.csv_generators import create_directory_if_not_exists
 
 matplotlib.use('TkAgg')
 
@@ -530,10 +531,156 @@ def compute_cluster_voxel_info(df: pd.DataFrame | None, name: str = "") -> List[
     return voxel_info
 
 
+def create_comparison_voxel_clusters_dataframe() -> pd.DataFrame:
+    print("This is the create_comparison_voxel_clusters_dataframe function! Doing some cool stuff now...")
+
+    cluster_data_csv_path_one = input('Enter the path of the FIRST cluster CSV file: ') or 'data_files/generated/voxels_cluster_ids.csv'
+    first_df = pd.read_csv(cluster_data_csv_path_one, header=0, float_precision='high')
+
+    cluster_data_csv_path_two = input('Enter the path of the SECOND cluster CSV file: ') or 'data_files/generated/voxels_cluster_ids[0.01].csv'
+    second_df = pd.read_csv(cluster_data_csv_path_two, header=0, float_precision='high')
+
+    # make sure the two dataframes have the same number of rows
+
+    if first_df.shape[0] != second_df.shape[0]:
+        print("The two dataframes have different number of rows. Exiting...")
+        return
+
+    cluster_to_compare = input('Enter the cluster number to compare: ')
+
+    while not cluster_to_compare.isdigit():
+        print("Invalid input. Please enter a valid number.")
+        cluster_to_compare = input('Enter the cluster number to compare: ')
+
+    cluster_to_compare = int(cluster_to_compare)
+
+    new_df = {}
+
+    # take the voxel numbers from the first dataset
+
+    new_df['voxel_number'] = first_df['voxel_number']
+
+    first_label = input('Enter the label you\'d like to give to the first dataset: ') or 'first_dataset'
+
+    # take the cluster labels from the first dataset
+
+    new_df[first_label + f'_{cluster_to_compare}'] = first_df[f'cluster_{cluster_to_compare}']
+
+    second_label = input('Enter the label you\'d like to give to the second dataset: ') or 'second_dataset'
+
+    # take the cluster labels from the second dataset
+
+    new_df[second_label + f'_{cluster_to_compare}'] = second_df[f'cluster_{cluster_to_compare}']
+        
+    new_df = pd.DataFrame(new_df)
+
+    print(new_df.head())
+
+    wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
+
+    if wants_to_save.lower() in ['y', 'yes', 'yeah', 'yep', 'yup']:
+        name_of_file = input("What would you like to name the file?: ")
+
+        create_directory_if_not_exists(name_of_file)
+
+        name_of_file = name_of_file.replace(".csv", "")
+        new_df.to_csv(f"{name_of_file}.csv", index=False)
+
+        print(f"File saved as {name_of_file}.csv")
+    
+    return new_df, cluster_to_compare
+
+
+def compare_voxel_cluster_labels(df: Optional[pd.DataFrame], numLabels: int) -> pd.DataFrame:
+    
+    df = df
+
+    if df is None:
+        input_path = input('Enter the path of the CSV file containing clusters to compare: ')
+        df = pd.read_csv(input_path, header=0, float_precision='high')
+
+    original_df = df
+
+    print('Comparing cluster labels...')
+
+    # want to keep track of the number of clusters that are the same and the number of clusters that are different
+
+    same_clusters = 0
+    different_clusters = 0
+
+    # remove the voxel number column
+
+    # store the voxel numbers
+    voxel_numbers = df['voxel_number']
+
+    df = df.drop('voxel_number', axis=1)
+    # get the number of columns in the dataframe
+
+    num_columns = df.shape[1]
+
+    cluster_voxels = {}
+
+    output_df = {}
+
+    voxels_that_changed = []
+
+    for i in range(numLabels):
+        cluster_voxels[i] = []
+
+    for i in range(num_columns):
+        for j in range(i + 1, num_columns):
+            col_one = df.iloc[:, i]
+            col_two = df.iloc[:, j]
+
+            for k in range(len(col_one)):
+                val1 = col_one[k]
+                val2 = col_two[k]
+                if val1 == val2:
+                    same_clusters += 1
+                else:
+                    different_clusters += 1
+                    cluster_voxels[val1].append(voxel_numbers[k])
+                    cluster_voxels[val2].append(voxel_numbers[k])
+                    voxels_that_changed.append(voxel_numbers[k])
+
+    print(f'Number of clusters that are the same: {same_clusters}')
+    print(f'Number of clusters that are different: {different_clusters}')
+
+    print('Voxels in different clusters that changed:')
+    for i in range(numLabels):
+        print(f'Cluster {i}: {len(cluster_voxels[i])}')
+
+    # filter out the original df to only include the voxels that changed
+        
+    output_df['voxel_number'] = voxels_that_changed
+
+    filtered_df = original_df[original_df['voxel_number'].isin(voxels_that_changed)]
+
+    print('Here\'s the filtered dataframe containing only changed voxels: ')
+
+    print(filtered_df.head())
+
+    wants_to_save = input("Would you like to save the data frame to a CSV file? (y/n): ")
+
+    if wants_to_save.lower() in ['y', 'yes', 'yeah', 'yep', 'yup']:
+        name_of_file = input("What would you like to name the file?: ")
+
+        create_directory_if_not_exists(name_of_file)
+
+        name_of_file = name_of_file.replace(".csv", "")
+        filtered_df.to_csv(f"{name_of_file}.csv", index=False)
+
+        print(f"File saved as {name_of_file}.csv")
+
+
+
 def main():
+    df, cluster_to_compare = create_comparison_voxel_clusters_dataframe()
+    compare_voxel_cluster_labels(df, cluster_to_compare)
+    
     # df, name = brain_kmeans_cbk()
     # compute_cluster_voxel_info(df=None, name="Colin")
-    visualize_clusters(pd.read_csv("data_files/generated/structure_ids/clustered/structure_136_clustered.csv"), "Cluster label for label")
+    # visualize_clusters(pd.read_csv("data_files/generated/structure_ids/clustered/structure_136_clustered.csv"), "Cluster label for label")
 
 
 if __name__ == '__main__':

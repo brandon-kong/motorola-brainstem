@@ -1,11 +1,20 @@
 # Brandon Kong's CSV Utility
 # ML_Brainstem 2024
 
-
+import os
 import pandas as pd
-
 from lib.string_parse import string_to_int_list
 
+def create_directory_if_not_exists(directory: str):
+
+    # check if there is a file at the end of the directory
+
+    if directory.endswith(".csv"):
+        directory = directory.split("/")
+        directory = "/".join(directory[:-1])
+    
+    if not os.path.exists(directory):
+        os.mkdir(directory)
 
 def generate_dataframe_with_structure_id() -> dict[int, pd.DataFrame]:
     output_k1 = get_644_gene_dataframe()
