@@ -63,7 +63,7 @@ def brain_kmeans_cbk(
     removed_columns = {}
 
     for (columnName, columnData) in df.items():
-        if columnName in ['X', 'Y', 'Z', 'Structure-ID', 'voxel_number', 'Unnamed: 0']:
+        if columnName in ['X', 'Y', 'Z', 'Structure-ID', 'voxel_number', 'voxRowNum', 'Unnamed: 0']:
             new_df[columnName] = columnData
             removed_columns[columnName] = columnData
             df.drop(columnName, axis=1, inplace=True)
@@ -677,7 +677,7 @@ def compare_voxel_cluster_labels(df: Optional[pd.DataFrame], numLabels: int) -> 
 def main():
     df, cluster_to_compare = create_comparison_voxel_clusters_dataframe()
     compare_voxel_cluster_labels(df, cluster_to_compare)
-    
+
     # df, name = brain_kmeans_cbk()
     # compute_cluster_voxel_info(df=None, name="Colin")
     # visualize_clusters(pd.read_csv("data_files/generated/structure_ids/clustered/structure_136_clustered.csv"), "Cluster label for label")
