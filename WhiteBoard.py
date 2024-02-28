@@ -531,7 +531,7 @@ def compute_cluster_voxel_info(df: pd.DataFrame | None, name: str = "") -> List[
     return voxel_info
 
 
-def create_comparison_voxel_clusters_dataframe() -> pd.DataFrame:
+def create_comparison_voxel_clusters_dataframe() -> pd.DataFrame | None:
     print("This is the create_comparison_voxel_clusters_dataframe function! Doing some cool stuff now...")
 
     cluster_data_csv_path_one = input('Enter the path of the FIRST cluster CSV file: ') or 'data_files/generated/voxels_cluster_ids.csv'
